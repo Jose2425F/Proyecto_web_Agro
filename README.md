@@ -75,16 +75,22 @@ La base de datos se llama `agrocolombia_connect` y consta de las siguientes tabl
 
 ## Instalación y Configuración
 
+**Requisitos:**
+- Un servidor web local como [XAMPP](https://www.apachefriends.org/es/index.html) o similar, que incluya Apache y MySQL.
+
 1.  **Clonar el repositorio:**
     ```bash
-    git clone <URL-DEL-REPOSITORIO>
+    git clone https://github.com/Jose2425F/Proyecto_web_Agro.git
     ```
+
 2.  **Importar la base de datos:**
-    - Cree una base de datos en MySQL llamada `agrocolombia_connect`.
-    - Importe el archivo `sql/create.sql` para crear las tablas y cargar los datos de ejemplo.
+    - Inicie los servicios de Apache y MySQL desde el panel de control de XAMPP.
+    - Abra phpMyAdmin (`http://localhost/phpmyadmin`) y cree una nueva base de datos llamada `agrocolombia_connect`.
+    - Seleccione la base de datos `agrocolombia_connect` y vaya a la pestaña "Importar".
+    - Seleccione el archivo `sql/create.sql` del proyecto y haga clic en "Continuar".
 
 3.  **Configurar la conexión a la base de datos:**
-    - Modifique el archivo `php/conexion_db.php` con sus credenciales de la base de datos:
+    - El archivo `php/conexion_db.php` está configurado para conectarse a la base de datos con el usuario `root` y sin contraseña. Si su configuración de MySQL es diferente, actualice este archivo:
       ```php
       <?php
       $conexion = mysqli_connect("localhost", "su_usuario", "su_contraseña", "agrocolombia_connect");
@@ -92,8 +98,8 @@ La base de datos se llama `agrocolombia_connect` y consta de las siguientes tabl
       ```
 
 4.  **Ejecutar el proyecto:**
-    - Inicie su servidor web (por ejemplo, Apache) y coloque los archivos del proyecto en el directorio raíz del servidor.
-    - Abra su navegador y vaya a `http://localhost/`.
+    - Mueva la carpeta del proyecto clonado al directorio `htdocs` de su instalación de XAMPP (generalmente `C:/xampp/htdocs`).
+    - Abra su navegador y vaya a `http://localhost/Proyecto_web_Agro/`.
 
 ## Consideraciones de Seguridad
 
