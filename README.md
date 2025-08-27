@@ -103,4 +103,4 @@ La base de datos se llama `agrocolombia_connect` y consta de las siguientes tabl
 
 ## Consideraciones de Seguridad
 
-- **Almacenamiento de Contraseñas:** **¡IMPORTANTE!** Las contraseñas se almacenan actualmente en texto plano. Se recomienda encarecidamente implementar el hashing de contraseñas utilizando `password_hash()` y `password_verify()` de PHP para mejorar la seguridad.
+- **Almacenamiento de Contraseñas:** **¡IMPORTANTE!** Las contraseñas se almacenan actualmente en texto plano. Se recomienda encarecidamente implementar el hashing de contraseñas utilizando `password_hash()` y `password_verify()` de PHP para mejorar la seguridad por el momento el proyecto lo llevamos asi.
