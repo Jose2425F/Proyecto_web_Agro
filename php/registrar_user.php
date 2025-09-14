@@ -1,5 +1,5 @@
 <?php
-
+// Formulario y lógica para que un usuario pueda crear una cuenta (campesino, inversionista).
 include 'conexion_db.php';
 
 // Iniciar sesión para usar SweetAlert2 en el lado del cliente
