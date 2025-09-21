@@ -61,7 +61,7 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch('http://localhost/Web_proyecto_Agro/php/registrar_user.php', {
+      const response = await fetch('/Web_proyecto_Agro/php/registrar_user.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
