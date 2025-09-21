@@ -9,9 +9,10 @@ export default defineConfig({
     '.ngrok-free.app', // permite cualquier subdominio de ngrok
   ],
   proxy: {
-    '/Web_proyecto_Agro': {
-      target: 'http://localhost',
+    '/Proyecto_web_Agro': {
+      target: 'http://localhost:8000',
       changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/Proyecto_web_Agro/, ''),
     },
   },
 }

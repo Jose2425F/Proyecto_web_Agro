@@ -57,7 +57,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('/Web_proyecto_Agro/php/Iniciar_sesion.php', {
+      const response = await fetch('/Proyecto_web_Agro/php/Iniciar_sesion.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
