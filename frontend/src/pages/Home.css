@@ -46,3 +46,33 @@
     display: inline-block;
     margin-top: 1rem;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pageContainer {
+        padding: 1rem; /* Adjust padding for smaller screens */
+    }
+
+    .header {
+        padding: 1.5rem; /* Slightly reduce header padding */
+    }
+
+    .header h1 {
+        font-size: 1.8rem; /* Adjust font size for smaller screens */
+    }
+
+    .header p {
+        font-size: 1rem; /* Adjust font size for smaller screens */
+    }
+
+    .featuresSection {
+        flex-direction: column; /* Stack cards vertically on small screens */
+        gap: 1rem; /* Reduce gap between stacked cards */
+    }
+
+    .featureCard {
+        max-width: 100%; /* Allow cards to take full width */
+        padding: 1.5rem; /* Adjust card padding */
+    }
+}
+

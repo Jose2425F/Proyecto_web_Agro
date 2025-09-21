@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DescriptionAlerts from '../components/DescriptionAlerts';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +16,7 @@ const Register = () => {
     message: '',
   });
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (alertInfo.message) {
@@ -84,6 +85,7 @@ const Register = () => {
             ContrasenaUser: '',
             rol: 'campesino',
         });
+        navigate('/home'); // Redirige a la página de inicio
       } else {
         setAlertInfo({
           severity: 'warning',

@@ -46,7 +46,7 @@ if(mysqli_num_rows($resultado) > 0){
         $_SESSION['id_usuario'] = $usuario_data['id'];
 
         $response['success'] = true;
-        $response['message'] = '¡Bienvenido!';
+        $response['message'] = "¡Bienvenido {$_SESSION["usuario"]}!";
         $response['user'] = [
             'id' => $usuario_data['id'],
             'nombre' => $usuario_data['nombre'],

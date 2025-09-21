@@ -15,11 +15,25 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+  // Redirect if already logged in
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.id) { 
+        navigate('/home');
+      }
+    } catch (e) {
+      console.error("Error al parsear el usuario de localStorage", e);
+      // Opcionalmente, limpiar datos de usuario mal formados
+      localStorage.removeItem('user');
+    }
+  }, [navigate]);
+
   useEffect(() => {
     if (alertInfo.message) {
       const timer = setTimeout(() => {
         setAlertInfo({ severity: '', title: '', message: '' });
-      }, 4000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [alertInfo.message]);
@@ -70,11 +84,13 @@ const Login = () => {
       if (result.success) {
         setAlertInfo({
           severity: 'success',
-          title: 'Success',
+          title: 'Exitoso',
           message: result.message,
         });
         localStorage.setItem('user', JSON.stringify(result.user));
-        navigate('/');
+        setTimeout(() => {
+          navigate('/home'); // Redirige a la página de inicio después de un breve retraso
+        }, 2000); // Retraso de 2 segundos
       } else {
         setAlertInfo({
           severity: 'warning',
