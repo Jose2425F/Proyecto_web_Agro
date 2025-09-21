@@ -8,5 +8,11 @@ export default defineConfig({
   allowedHosts: [
     '.ngrok-free.app', // permite cualquier subdominio de ngrok
   ],
+  proxy: {
+    '/Web_proyecto_Agro': {
+      target: 'http://localhost',
+      changeOrigin: true,
+    },
+  },
 }
 })
