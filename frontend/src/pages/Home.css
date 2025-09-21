@@ -1,0 +1,48 @@
+.pageContainer {
+    text-align: center;
+    padding: 2rem 8rem;
+}
+
+.header {
+    background-color: #2A2A2A;
+    color: white;
+    padding: 2rem 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.header p {
+    font-size: 1.2rem;
+    color: #ffffff;
+}
+
+.featuresSection {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.featureCard {
+    background: #2A2A2A;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    max-width: 300px;
+}
+
+.featureCard h3 {
+    color: #fbfbfb;
+    margin-top: 0;
+}
+
+.pageContainer h2{
+    color: #fbfbfb;
+}
+
+.featureCard a {
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 1rem;
+}

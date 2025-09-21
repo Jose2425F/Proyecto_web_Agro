@@ -1,0 +1,299 @@
+/* Estilos Generales */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  background-color: #1A1A1A;
+  color: #d1d1d1;
+}
+
+.page-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+h1 {
+    color: #14C900;
+}
+
+.color_p p {
+    color: #000000;
+}
+
+.custom-link {
+    color: #14C900;
+    text-decoration: none;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+}
+
+/* Barra de Navegación */
+.navbar {
+  background-color: #2A2A2A;
+  padding: 1.3rem 2rem;
+  box-shadow: 0 2px 4px #2A2A2A;
+  display: flex;
+  justify-content: space-between; /* Distribuye el espacio entre los elementos */
+  align-items: center;
+  position: relative;
+  z-index: 1000;
+}
+
+.navbar-logo a {
+  text-decoration: none;
+  color: #14C900;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  font-size: 1.1rem;
+  padding: 0;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  color: #F0F0F0;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #14C900; 
+}
+
+.profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-img {
+  border-radius: 50%;
+}
+
+.menu-icon {
+  display: none;
+  cursor: pointer;
+}
+
+.menu-icon div {
+  width: 25px;
+  height: 3px;
+  background-color: #F0F0F0;
+  margin: 5px 0;
+}
+
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    background-color: #2A2A2A;
+    padding: 1rem 2rem;
+    z-index: 999;
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .menu-icon {
+    display: block;
+  }
+}
+
+/* Formularios */
+form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+form div {
+    margin-bottom: 1.5rem;
+}
+
+.project-image-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;  
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #555;
+}
+
+form input, form select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+}
+
+form button {
+    width: 100%;
+    padding: 0.9rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #45a049;
+}
+
+/* Grid de Proyectos */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  padding: 0 2rem;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.project-content{
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.project-content h4{
+  margin: 0rem 0 0.3rem;
+}
+.project-content p{
+  margin: 0.3rem 0 0.3rem;
+}
+
+
+.project-card {
+  background-color: #2A2A2A;
+  border: 1px solid #616161;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  overflow: hidden; /* ahora funciona bien porque el contenido está separado */
+}
+
+.project-card:hover {
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+  transform: translateY(-5px);
+}
+
+.project-card h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #F0F0F0;
+}
+
+.project-description {
+    font-size: 0.9rem;
+    color: #F0F0F0;
+    flex-grow: 1; /* Empuja el contenido inferior hacia abajo */
+}
+
+.estado-proyecto {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.estado-buscando-inversion { background-color: #3498db; } /* Azul */
+.estado-en-progreso { background-color: #f1c40f; } /* Amarillo */
+.estado-completado { background-color: #2ecc71; } /* Verde */
+
+.progreso-info { margin-top: 1.5rem; }
+.progreso {
+    background-color: #e9ecef;
+    border-radius: 20px;
+    height: 8px;
+    margin-bottom: 0.5rem;
+}
+.progreso-barra {
+    background-color: #14C900;
+    height: 100%;
+    border-radius: 20px;
+}
+.meta {
+    font-size: 0.9rem;
+    color: #F0F0F0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-accion {
+    flex-grow: 1;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-invertir {
+    background-color: #14C900;
+    color: #fff;
+}
+.btn-invertir:hover { background-color: #14c900c3; }
+
+.btn-detalles {
+    background-color: transparent;
+    color: #14C900;
+    border-color: #14C900;
+}
+.btn-detalles:hover {
+    background-color: #14C900;
+    color: #fff;
+}
+
+/* Estilos para errores de formulario */
+.form-error {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.5rem;
+}

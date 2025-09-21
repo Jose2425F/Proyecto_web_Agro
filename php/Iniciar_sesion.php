@@ -2,12 +2,33 @@
 session_start();
 include 'conexion_db.php';
 
-$CorreoElectronico = $_POST["correo"];
-$ContrasenaUser = $_POST["contra"];
+header('Content-Type: application/json');
 
-// Guardar correo en sesión para repoblar el formulario de login en caso de error
-$_SESSION['form_data'] = ['correo' => $CorreoElectronico];
-$_SESSION['form_type'] = 'login';
+// Habilitar CORS para permitir solicitudes desde tu frontend de React
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
+
+// Manejar la solicitud OPTIONS (pre-vuelo)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+$response = ['success' => false, 'message' => ''];
+
+// Leer los datos del cuerpo de la solicitud
+$data = json_decode(file_get_contents("php://input"), true);
+
+$CorreoElectronico = $data["CorreoElectronico"] ?? null;
+$ContrasenaUser = $data["ContrasenaUser"] ?? null;
+
+if (empty($CorreoElectronico) || empty($ContrasenaUser)) {
+    $response['message'] = 'Por favor, completa todos los campos.';
+    echo json_encode($response);
+    exit();
+}
 
 // Usar consultas preparadas para evitar inyección SQL
 $stmt = mysqli_prepare($conexion, "SELECT * FROM usuarios WHERE email = ?");
@@ -20,41 +41,27 @@ if(mysqli_num_rows($resultado) > 0){
     
     // Verificar la contraseña
     if ($ContrasenaUser === $usuario_data['password']) {
-        unset($_SESSION['form_data']); // Limpiar datos del formulario en caso de éxito
-        unset($_SESSION['form_type']);
-
         $_SESSION['usuario'] = $usuario_data['nombre'];
         $_SESSION['rol'] = $usuario_data['rol'];
         $_SESSION['id_usuario'] = $usuario_data['id'];
-        
-        $_SESSION['swal'] = [
-            'icon' => 'success',
-            'title' => '¡Bienvenido!',
-            'text' => 'Inicio de sesión exitoso.',
-            'timer' => 1500,
-            'showConfirmButton' => false
+
+        $response['success'] = true;
+        $response['message'] = '¡Bienvenido!';
+        $response['user'] = [
+            'id' => $usuario_data['id'],
+            'nombre' => $usuario_data['nombre'],
+            'email' => $usuario_data['email'],
+            'rol' => $usuario_data['rol']
         ];
 
-        header("location: ../bienvenida.php");
-        exit;
     } else {
-        $_SESSION['swal'] = [
-            'icon' => 'error',
-            'title' => 'Error de autenticación',
-            'text' => 'Correo o contraseña incorrectos. Intente nuevamente.'
-        ];
-        header("location: ../index.php");
-        exit();
+        $response['message'] = 'Correo o contraseña incorrectos. Intente nuevamente.';
     }
 } else {
-    $_SESSION['swal'] = [
-        'icon' => 'error',
-        'title' => 'Error de autenticación',
-        'text' => 'Correo o contraseña incorrectos. Intente nuevamente.'
-    ];
-    header("location: ../index.php");
-    exit();
+    $response['message'] = 'Correo o contraseña incorrectos. Intente nuevamente.';
 }
+
+echo json_encode($response);
 
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
