@@ -1,54 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import cafe from '../assets/proyectos/cultivo-de-cafe-colombiano.jpg';
-import huerta from '../assets/proyectos/images.jpeg';
-import miel from '../assets/proyectos/istockphoto-1328004520-612x612.jpg';
-import banano from '../assets/proyectos/banana-growing-plantation.png';
 
-// Datos de ejemplo (mock data)
-const mockProjects = [
-  {
-    id: 1,
-    nombre: 'Cultivo de Café Sostenible',
-    estado: 'Buscando Inversión',
-    costos: 5000,
-    monto_recaudado: 1500,
-    descripcion: 'Proyecto para implementar prácticas de cultivo de café amigables con el medio ambiente en la sierra.',
-    img: cafe,
-  },
-  {
-    id: 2,
-    nombre: 'Huerta Orgánica Comunitaria',
-    estado: 'En Progreso',
-    costos: 3000,
-    monto_recaudado: 3000,
-    descripcion: 'Creación de una huerta orgánica para abastecer a la comunidad local con vegetales frescos y saludables.',
-    img: huerta,
-  },
-  {
-    id: 3,
-    nombre: 'Apicultura y Producción de Miel',
-    estado: 'Completado',
-    costos: 2000,
-    monto_recaudado: 2500, // A veces se recauda más
-    descripcion: 'Instalación de colmenas para la producción y comercialización de miel de abeja pura.',
-    img: miel,
-  },
-    {
-    id: 4,
-    nombre: 'Cosecha de Plátanos de Exportación',
-    estado: 'Buscando Inversión',
-    costos: 8000,
-    monto_recaudado: 2000,
-    descripcion: 'Expansión de cultivo de plátanos para cumplir con estándares de exportación y abrir nuevos mercados.',
-    img: banano,
-  },
-];
 
 const getEstadoClase = (estado) => {
     return 'estado-' + estado.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-');
 }
-
+    // Estado del componente para datos, carga y errores
 const Projects = () => {
+
+    const [proyectos, setProyectos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    //  Hook para la llamada a la API
+    useEffect(() => {
+        const fetchProyectos = async () => {
+            try {
+                // Realiza la petición a tu archivo PHP
+                const response = await fetch('/Proyecto_web_Agro/php/traer_proyecto.php');
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener la información de los proyectos.');
+                }
+                const data = await response.json();
+                setProyectos(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProyectos();
+    }, []);
+
+    
   return (
     <div>
       <div style={{ textAlign: 'center' }}>
@@ -56,12 +40,15 @@ const Projects = () => {
         <p>Explora los proyectos agrícolas que buscan transformar el campo.</p>
       </div>
       <div className="projects-grid">
-        {mockProjects.map(proyecto => {
+        {/* 4. Mapeo Dinámico: */}
+        {/* Se usa la variable de estado `proyectos` en lugar de la data estática. */}
+        {proyectos.map(proyecto => {
             const porcentaje = (proyecto.costos > 0) ? Math.min(100, (proyecto.monto_recaudado / proyecto.costos) * 100) : 0;
             return (
                 <div key={proyecto.id} className="project-card">
                     <div className="project-image-container">
-                        <img src={proyecto.img} alt={proyecto.nombre} className="project-image" />
+                        {/* La URL de la imagen ahora proviene de la base de datos */}
+                        <img src={proyecto.imagen_url} alt={proyecto.nombre} className="project-image" />
                         <span className={`estado-proyecto ${getEstadoClase(proyecto.estado)}`}>{proyecto.estado}</span>
                     </div>
                     <div className="project-content"> 
