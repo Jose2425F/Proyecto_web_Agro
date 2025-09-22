@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Para obtener el ID del proyecto desde la URL
-import '../App.css'; // Asegúrate de importar los estilos globales
-import cafe from '../assets/proyectos/cultivo-de-cafe-colombiano.jpg';
+import { useParams } from 'react-router-dom';
+import '../App.css';
 
-const ProjectDetails = () => {
+const DetalleProyecto = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,51 +47,57 @@ const ProjectDetails = () => {
     return <div className="page-container">Error: {error}</div>;
   }
 
+  const progressPercentage = Math.round((project.monto_recaudado / project.costos) * 100);
+
   return (
     <div className="page-container">
-      <div className="project-details">
-        <div className="project-header">
+      <div className="detalle-proyecto-container">
+        <div className="detalle-proyecto-header">
           <h1>{project.nombre}</h1>
           <span className={`estado-proyecto ${project.estado.toLowerCase().replace(' ', '-')}`}>
             {project.estado}
           </span>
         </div>
 
-        <div className="project-body">
-          <div className="project-image-container">
+        <div className="detalle-proyecto-body">
+          <div className="detalle-proyecto-img-container">
             <img
-              src={project.imagen_url || cafe}
-              alt="Imagen del Proyecto"
-              className="project-image"
+              src={`/` + project.imagen_url.replace(/\\/g, '/')}
+              alt={project.nombre}
+              className="detalle-proyecto-img"
             />
           </div>
 
-          <div className="details-container">
-            <p><strong>Descripción:</strong> {project.descripcion}</p>
-            <p><strong>Recaudado:</strong> ${project.monto_recaudado}</p>
-            <p><strong>Meta:</strong> ${project.costos}</p>
-            <p><strong>Producción Estimada:</strong> {project.produccion_estimada}</p>
-            <p><strong>Fecha de Creación:</strong> {new Date(project.fecha_creacion).toLocaleDateString()}</p>
-            <p><strong>Likes:</strong> {project.likes_count}</p>
-          </div>
+          <div className="detalle-proyecto-info">
+            <p className="descripcion">{project.descripcion}</p>
+            
+            <div className="progress-section">
+              <div className="progress-bar-container">
+                <div
+                  className="progress-bar"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+                <span className="progress-bar-text">{progressPercentage}%</span>
+              </div>
+              <div className="progress-labels">
+                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.monto_recaudado)}</span>
+                <span>Meta: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.costos)}</span>
+              </div>
+            </div>
 
-          {/* Barra de progreso con texto centrado */}
-          <div className="progress-bar">
-            <div
-              className="progress"
-              style={{ width: `${(project.monto_recaudado / project.costos) * 100}%` }}
-            ></div>
-            <span className="progress-text">
-              {`${Math.round((project.monto_recaudado / project.costos) * 100)}% 
-              ($${project.monto_recaudado.toLocaleString()} / $${project.costos.toLocaleString()})`}
-            </span>
-          </div>
+            <div className="info-adicional">
+              <p><strong>Producción Estimada:</strong> {project.produccion_estimada}</p>
+              <p><strong>Fecha de Creación:</strong> {new Date(project.fecha_creacion).toLocaleDateString()}</p>
+              <p><strong>Likes:</strong> {project.likes_count}</p>
+            </div>
 
-          {/* Botones de interacción */}
-          <div className="actions-container">
-            <button className="btn-support" onClick={handleInvest}>Invertir</button>
-            <button className="btn-like" onClick={handleLike}>Dar Like</button>
-            <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
+            <div className="actions-container">
+              {project.estado !== 'En Progreso' && (
+                  <button className="btn-support" onClick={handleInvest}>Invertir</button>
+              )}
+              <button className="btn-like" onClick={handleLike}>Dar Like</button>
+              <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
+            </div>
           </div>
         </div>
       </div>
@@ -100,4 +105,4 @@ const ProjectDetails = () => {
   );
 };
 
-export default ProjectDetails;
+export default DetalleProyecto;
