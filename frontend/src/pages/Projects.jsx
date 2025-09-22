@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import cafe from '../assets/proyectos/cultivo-de-cafe-colombiano.jpg';
-
+import { useNavigate } from 'react-router-dom'; // Importar el hook para la navegación
 
 const getEstadoClase = (estado) => {
     return 'estado-' + estado.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-');
@@ -9,7 +8,7 @@ const getEstadoClase = (estado) => {
 
     // Estado del componente para datos, carga y errores
 const Projects = () => {
-
+    const navigate = useNavigate(); // Hook para redirigir a otra página
     const [proyectos, setProyectos] = useState([]);
 
     //  Hook para la llamada a la API
@@ -71,7 +70,12 @@ const Projects = () => {
                           proyecto.estado != "En Progreso" && (
                             <button className="btn-accion btn-invertir">Invertir</button>
                           )}
-                          <button className="btn-accion btn-detalles">Ver Detalles</button>
+                         <button
+                    className="btn-accion btn-detalles"
+                    onClick={() => navigate(`/projects/${proyecto.id}`)} // Redirige al componente DetalleProyecto
+                  >
+                    Ver Detalles
+                  </button>
                       </div>
                     </div>
                 </div>
