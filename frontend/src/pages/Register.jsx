@@ -87,7 +87,7 @@ const Register = () => {
         });
         setTimeout(() => {
           navigate('/login'); // Redirige a la página de inicio después de un breve retraso
-        }, 2500);
+        }, 3500);
       } else {
         setAlertInfo({
           severity: 'warning',
