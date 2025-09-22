@@ -69,7 +69,10 @@ const Projects = () => {
                       </div>
 
                       <div className="card-actions">
-                          <button className="btn-accion btn-invertir">Invertir</button>
+                        {
+                          proyecto.estado != "En Progreso" && (
+                            <button className="btn-accion btn-invertir">Invertir</button>
+                          )}
                           <button className="btn-accion btn-detalles">Ver Detalles</button>
                       </div>
                     </div>
