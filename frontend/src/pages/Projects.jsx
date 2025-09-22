@@ -5,6 +5,8 @@ import cafe from '../assets/proyectos/cultivo-de-cafe-colombiano.jpg';
 const getEstadoClase = (estado) => {
     return 'estado-' + estado.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-');
 }
+
+
     // Estado del componente para datos, carga y errores
 const Projects = () => {
 
@@ -53,14 +55,16 @@ const Projects = () => {
                     </div>
                     <div className="project-content"> 
                       <h4>{proyecto.nombre}</h4>
-                      <p className="project-description">{proyecto.descripcion}</p>
+                     <p className="project-description">
+                        {proyecto.descripcion.length > 100 ? proyecto.descripcion.substring(0, 150) + '...' : proyecto.descripcion}
+                      </p>
                       
                       <div className="progreso-info">
                           <div className="progreso">
                               <div className="progreso-barra" style={{ width: `${porcentaje}%` }}></div>
                           </div>
                           <div className="meta">
-                              <span><strong>${proyecto.monto_recaudado.toLocaleString()}</strong> de ${proyecto.costos.toLocaleString()}</span>
+                             <span><strong>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(proyecto.monto_recaudado)}</strong> de {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(proyecto.costos)}</span>
                           </div>
                       </div>
 
