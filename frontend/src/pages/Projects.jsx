@@ -11,8 +11,6 @@ const getEstadoClase = (estado) => {
 const Projects = () => {
 
     const [proyectos, setProyectos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     //  Hook para la llamada a la API
     useEffect(() => {
