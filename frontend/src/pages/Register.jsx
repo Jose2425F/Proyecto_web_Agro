@@ -75,7 +75,7 @@ const Register = () => {
       if (result.success) {
         setAlertInfo({
           severity: 'success',
-          title: 'Success',
+          title: '¡Registro Exitoso!',
           message: result.message,
         });
         setFormData({
@@ -85,7 +85,9 @@ const Register = () => {
             ContrasenaUser: '',
             rol: 'campesino',
         });
-        navigate('/login');
+        setTimeout(() => {
+          navigate('/login'); // Redirige a la página de inicio después de un breve retraso
+        }, 2500);
       } else {
         setAlertInfo({
           severity: 'warning',

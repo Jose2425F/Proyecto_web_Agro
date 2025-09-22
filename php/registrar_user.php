@@ -57,7 +57,7 @@ mysqli_stmt_bind_param($stmt_insert, "sssss", $nombre_completo, $CorreoElectroni
 
 if(mysqli_stmt_execute($stmt_insert)){
     $response['success'] = true;
-    $response['message'] = '¡Registro Exitoso! Ahora puedes iniciar sesión.';
+    $response['message'] = 'Ahora puedes iniciar sesión con tu nueva cuenta.';
     echo json_encode($response);
     exit();
 } else {
