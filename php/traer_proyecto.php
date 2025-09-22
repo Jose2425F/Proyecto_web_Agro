@@ -9,7 +9,7 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
 // Consulta SQL
-$query_proyectos = "SELECT p.id, p.nombre, p.descripcion, p.monto_recaudado, p.costos, p.estado, u.nombre as nombre_creador, p.imagen_url FROM proyectos p JOIN usuarios u ON p.id_usuario = u.id ORDER BY p.fecha_creacion DESC LIMIT 4";
+$query_proyectos = "SELECT p.id, p.nombre, p.descripcion, p.monto_recaudado, p.costos, p.estado, u.nombre as nombre_creador, p.imagen_url FROM proyectos p JOIN usuarios u ON p.id_usuario = u.id ORDER BY p.fecha_creacion ";
 $resultado_proyectos = mysqli_query($conexion, $query_proyectos);
 
 $proyectos_array = array();
