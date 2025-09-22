@@ -85,7 +85,7 @@ const Register = () => {
             ContrasenaUser: '',
             rol: 'campesino',
         });
-        navigate('/home'); // Redirige a la página de inicio
+        navigate('/login');
       } else {
         setAlertInfo({
           severity: 'warning',
