@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DescriptionAlerts from '../components/DescriptionAlerts';
 import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import RoleSelectionModal from '../components/RoleSelectionModal';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,11 +20,14 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [googleToken, setGoogleToken] = useState(null);
+
   useEffect(() => {
     if (alertInfo.message) {
       const timer = setTimeout(() => {
         setAlertInfo({ severity: '', title: '', message: '' });
-      }, 4000); 
+      }, 4000);
       return () => clearTimeout(timer);
     }
   }, [alertInfo.message]);
@@ -86,7 +91,7 @@ const Register = () => {
             rol: 'campesino',
         });
         setTimeout(() => {
-          navigate('/login'); // Redirige a la página de inicio después de un breve retraso
+          navigate('/login');
         }, 3500);
       } else {
         setAlertInfo({
@@ -104,8 +109,99 @@ const Register = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const id_token = credentialResponse.credential;
+    
+    try {
+      const response = await fetch('/Proyecto_web_Agro/php/google_auth.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_token, source: 'register' }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAlertInfo({
+          severity: 'success',
+          title: 'Exitoso',
+          message: result.message,
+        });
+        localStorage.setItem('user', JSON.stringify(result.user));
+        navigate('/home');
+      } else if (result.action === 'CHOOSE_ROLE') {
+        setGoogleToken(id_token);
+        setShowRoleModal(true);
+      } else {
+        setAlertInfo({
+          severity: 'warning',
+          title: 'Advertencia',
+          message: result.message || 'Ocurrió un error inesperado.',
+        });
+      }
+    } catch (error) {
+      setAlertInfo({
+        severity: 'error',
+        title: 'Error',
+        message: `Error de conexión con Google: ${error.message}`,
+      });
+    }
+  };
+
+  const handleRoleSelection = async (selectedRole) => {
+    if (!googleToken) return;
+
+    try {
+      const response = await fetch('/Proyecto_web_Agro/php/google_auth.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_token: googleToken, source: 'register', rol: selectedRole }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAlertInfo({
+          severity: 'success',
+          title: '¡Registro Completo!',
+          message: result.message,
+        });
+        localStorage.setItem('user', JSON.stringify(result.user));
+        navigate('/home');
+      } else {
+        setAlertInfo({
+          severity: 'error',
+          title: 'Error',
+          message: result.message || 'No se pudo completar el registro.',
+        });
+      }
+    } catch (error) {
+      setAlertInfo({
+        severity: 'error',
+        title: 'Error',
+        message: `Error de conexión: ${error.message}`,
+      });
+    } finally {
+      setShowRoleModal(false);
+      setGoogleToken(null);
+    }
+  };
+
   return (
     <div>
+      {showRoleModal && (
+        <RoleSelectionModal
+          onRoleSelect={handleRoleSelection}
+          onClose={() => {
+            setShowRoleModal(false);
+            setGoogleToken(null);
+          }}
+        />
+      )}
       <form onSubmit={handleSubmit}>
         <div>
           <h1>Registro de Usuario</h1>
@@ -158,6 +254,24 @@ const Register = () => {
         <div className='color_p'>
           <button type="submit">Registrarse</button>
           <p>¿Ya tienes una cuenta? <Link to="/login" className="custom-link">Inicia Sesión</Link></p>
+          
+          <div className="form-divider">O</div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {
+                setAlertInfo({
+                  severity: 'error',
+                  title: 'Error',
+                  message: 'El registro con Google falló. Por favor, inténtalo de nuevo.',
+                });
+              }}
+              theme="outline"
+              size="large"
+              width="436"
+            />
+          </div>
         </div>
       </form>
       <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>

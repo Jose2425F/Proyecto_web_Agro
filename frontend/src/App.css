@@ -549,3 +549,25 @@ form button:hover {
   }
 }
 
+.form-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #888;
+  margin: 1.5rem 0;
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.form-divider:not(:empty)::before {
+  margin-right: .5em;
+}
+
+.form-divider:not(:empty)::after {
+  margin-left: .5em;
+}
