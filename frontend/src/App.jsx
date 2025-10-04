@@ -5,6 +5,7 @@ import Projects from './pages/Projects';
 import Register from './pages/Register';
 import DetalleProyecto from './components/DetalleProyecto';
 import Login from './pages/Login';
+import Perfil from './pages/Perfil';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<DetalleProyecto />} /> {/* Ruta dinámica */}
+          <Route path="/perfil" element={<Perfil />} />
         </Route>
       </Routes>
     </Router>

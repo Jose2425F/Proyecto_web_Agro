@@ -47,6 +47,7 @@ if (!$payload) {
 $google_id = $payload['sub'] ?? null;
 $email = $payload['email'] ?? null;
 $nombre = $payload['name'] ?? null;
+$foto_perfil = $payload['picture'] ?? null;
 
 if (!$google_id || !$email || !$nombre) {
     $response['message'] = 'La información del token es incompleta.';
@@ -74,15 +75,16 @@ if (mysqli_num_rows($resultado) > 0) {
     $resultado = mysqli_stmt_get_result($stmt);
 
     if (mysqli_num_rows($resultado) > 0) {
-        // User found by email, link google_id
+        // User found by email, link google_id and update profile picture
         $usuario_data = mysqli_fetch_assoc($resultado);
         $user_id = $usuario_data['id'];
 
         mysqli_stmt_close($stmt);
-        $stmt_update = mysqli_prepare($conexion, "UPDATE usuarios SET google_id = ? WHERE id = ?");
-        mysqli_stmt_bind_param($stmt_update, "si", $google_id, $user_id);
+        $stmt_update = mysqli_prepare($conexion, "UPDATE usuarios SET google_id = ?, foto_perfil = ? WHERE id = ?");
+        mysqli_stmt_bind_param($stmt_update, "ssi", $google_id, $foto_perfil, $user_id);
         mysqli_stmt_execute($stmt_update);
         mysqli_stmt_close($stmt_update);
+        $usuario_data['foto_perfil'] = $foto_perfil; // Update data for current session
     } else {
         // 3. User does not exist
         if ($source === 'login') {
@@ -111,8 +113,8 @@ if (mysqli_num_rows($resultado) > 0) {
 
             $usuario_generado = explode('@', $email)[0] . rand(100, 999);
 
-            $stmt_insert = mysqli_prepare($conexion, "INSERT INTO usuarios (nombre, email, usuario, rol, google_id) VALUES (?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt_insert, "sssss", $nombre, $email, $usuario_generado, $rol_defecto, $google_id);
+            $stmt_insert = mysqli_prepare($conexion, "INSERT INTO usuarios (nombre, email, usuario, rol, google_id, foto_perfil) VALUES (?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt_insert, "ssssss", $nombre, $email, $usuario_generado, $rol_defecto, $google_id, $foto_perfil);
             
             if (mysqli_stmt_execute($stmt_insert)) {
                 $new_user_id = mysqli_insert_id($conexion);
@@ -145,7 +147,8 @@ if (isset($usuario_data)) {
         'id' => $usuario_data['id'],
         'nombre' => $usuario_data['nombre'],
         'email' => $usuario_data['email'],
-        'rol' => $usuario_data['rol']
+        'rol' => $usuario_data['rol'],
+        'foto_perfil' => $usuario_data['foto_perfil']
     ];
 }
 

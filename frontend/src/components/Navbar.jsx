@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import Stack from '@mui/material/Stack';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Nuevo estado para el rol del usuario
+  const [userRole, setUserRole] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [profilePic, setProfilePic] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,18 +19,24 @@ const Navbar = () => {
         setIsLoggedIn(true);
         try {
           const userData = JSON.parse(user);
-          setUserRole(userData.rol); // Guardar el rol del usuario
+          setUserRole(userData.rol);
+          setUserName(userData.nombre);
+          setProfilePic(userData.foto_perfil);
         } catch (e) {
           console.error("Error al parsear los datos de usuario de localStorage", e);
           setUserRole(null);
+          setUserName('');
+          setProfilePic('');
         }
       } else {
         setIsLoggedIn(false);
         setUserRole(null);
+        setUserName('');
+        setProfilePic('');
       }
     };
 
-    checkLoginStatus(); // Comprobamos el estado del login
+    checkLoginStatus();
 
     window.addEventListener('storage', checkLoginStatus);
 
@@ -35,10 +46,12 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('user'); // Borrar datos de usuario de localStorage
-    setIsLoggedIn(false); // Actualizar el estado de inicio de sesión
-    setUserRole(null); // Limpiar el rol al cerrar sesión
-    navigate('/'); // Redirigir a la página de inicio
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setUserRole(null);
+    setUserName('');
+    setProfilePic('');
+    navigate('/');
   };
 
   return (
@@ -73,16 +86,27 @@ const Navbar = () => {
             <Link to="/admin-panel" onClick={() => setMenuOpen(false)}>Panel Admin</Link>
           </li>
         )}
-        {!isLoggedIn && (
-          <>
-            <li>
-              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
-            </li>
-          </>
-        )}
-        {isLoggedIn && (
+        {!isLoggedIn ? (
           <li>
-            <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+            <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+          </li>
+        ) : (
+          <li className="profile-menu">
+            <button onClick={() => setDropdownOpen(!dropdownOpen)} className="profile-menu-trigger">
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Avatar alt={userName} src={profilePic} sx={{ width: 37, height: 37 }}/>
+              </Stack>
+            </button>
+            {dropdownOpen && (
+              <ul className="profile-dropdown">
+                <li>
+                  <Link to="/perfil" onClick={() => {setMenuOpen(false); setDropdownOpen(false);}}>Mi Perfil</Link>
+                </li>
+                <li>
+                  <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+                </li>
+              </ul>
+            )}
           </li>
         )}
       </ul>
