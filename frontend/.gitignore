@@ -23,4 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 .env
-conexion_db.php
