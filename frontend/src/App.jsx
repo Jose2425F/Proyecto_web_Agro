@@ -7,16 +7,15 @@ import DetalleProyecto from './components/DetalleProyecto';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
 import './App.css';
-
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} /> {/* Redirige la raíz a home */}
+        <Route path="/" element={<Navigate to="/home" replace />} /> 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* Rutas que requieren Navbar */}
-        <Route element={<><Navbar /><Outlet /></>}> {/* Usar Outlet para rutas anidadas */}
+        <Route element={<><Navbar /><Outlet /></>}>
           <Route path="/home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<DetalleProyecto />} /> {/* Ruta dinámica */}

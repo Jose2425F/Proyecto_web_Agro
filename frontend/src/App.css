@@ -1,39 +1,45 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* Estilos Generales */
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   margin: 0;
-  background-color: #1A1A1A;
+  background-color: #1a1a1a;
   color: #d1d1d1;
 }
 
 .page-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
 }
 
 h1 {
-    color: #14C900;
+  color: #14c900;
 }
 
 .color_p p {
-    color: #000000;
+  color: #000000;
 }
 
 .custom-link {
-    color: #14C900;
-    text-decoration: none;
+  color: #14c900;
+  text-decoration: none;
 }
 
 .custom-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* Barra de Navegación */
 .navbar {
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   padding: 1.3rem 2rem;
-  box-shadow: 0 2px 4px #2A2A2A;
+  box-shadow: 0 2px 4px #2a2a2a;
   display: flex;
   justify-content: space-between; /* Distribuye el espacio entre los elementos */
   align-items: center;
@@ -43,7 +49,7 @@ h1 {
 
 .navbar-logo a {
   text-decoration: none;
-  color: #14C900;
+  color: #14c900;
   font-weight: 700;
   font-size: 1.6rem;
 }
@@ -60,13 +66,13 @@ h1 {
 
 .navbar-links a {
   text-decoration: none;
-  color: #F0F0F0;
+  color: #f0f0f0;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .navbar-links a:hover {
-  color: #14C900; 
+  color: #14c900;
 }
 
 .profile-link {
@@ -87,44 +93,23 @@ h1 {
 .menu-icon div {
   width: 25px;
   height: 3px;
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
   margin: 5px 0;
 }
 
-@media (max-width: 768px) {
-  .navbar-links {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    position: absolute;
-    top: 70px;
-    left: 0;
-    background-color: #2A2A2A;
-    padding: 1rem 2rem;
-    z-index: 999;
-  }
-
-  .navbar-links.active {
-    display: flex;
-  }
-
-  .menu-icon {
-    display: block;
-  }
-}
 
 /* Formularios */
 form {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    max-width: 500px;
-    margin: 2rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  margin: 2rem auto;
 }
 
 form div {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .project-image-container {
@@ -138,39 +123,40 @@ form div {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;  
+  display: block;
 }
 
 form label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #555;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
 }
 
-form input, form select {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+form input,
+form select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
 }
 
 form button {
-    width: 100%;
-    padding: 0.9rem;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 form button:hover {
-    background-color: #45a049;
+  background-color: #45a049;
 }
 
 /* Grid de Proyectos */
@@ -181,22 +167,21 @@ form button:hover {
   gap: 1.5rem;
   margin-top: 2rem;
 }
-.project-content{
+.project-content {
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
-.project-content h4{
+.project-content h4 {
   margin: 0rem 0 0.3rem;
 }
-.project-content p{
+.project-content p {
   margin: 0.3rem 0 0.3rem;
 }
 
-
 .project-card {
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border: 1px solid #616161;
   border-radius: 12px;
   display: flex;
@@ -214,13 +199,13 @@ form button:hover {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #F0F0F0;
+  color: #f0f0f0;
 }
 
 .project-description {
-    font-size: 0.9rem;
-    color: #F0F0F0;
-    flex-grow: 1; /* Empuja el contenido inferior hacia abajo */
+  font-size: 0.9rem;
+  color: #f0f0f0;
+  flex-grow: 1; /* Empuja el contenido inferior hacia abajo */
 }
 
 .estado-proyecto {
@@ -234,76 +219,86 @@ form button:hover {
   color: #fff;
 }
 
-.estado-buscando-inversion { background-color: #3498db; } /* Azul */
-.estado-en-progreso { background-color: #f1c40f; } /* Amarillo */
-.estado-completado { background-color: #2ecc71; } /* Verde */
+.estado-buscando-inversion {
+  background-color: #3498db;
+} /* Azul */
+.estado-en-progreso {
+  background-color: #f1c40f;
+} /* Amarillo */
+.estado-completado {
+  background-color: #2ecc71;
+} /* Verde */
 
-.progreso-info { margin-top: 1.5rem; }
+.progreso-info {
+  margin-top: 1.5rem;
+}
 .progreso {
-    background-color: #e9ecef;
-    border-radius: 20px;
-    height: 8px;
-    margin-bottom: 0.5rem;
+  background-color: #e9ecef;
+  border-radius: 20px;
+  height: 8px;
+  margin-bottom: 0.5rem;
 }
 .progreso-barra {
-    background-color: #14C900;
-    height: 100%;
-    border-radius: 20px;
+  background-color: #14c900;
+  height: 100%;
+  border-radius: 20px;
 }
 .meta {
-    font-size: 0.9rem;
-    color: #F0F0F0;
-    display: flex;
-    justify-content: space-between;
+  font-size: 0.9rem;
+  color: #f0f0f0;
+  display: flex;
+  justify-content: space-between;
 }
 
 .card-actions {
-    margin-top: 1.5rem;
-    display: flex;
-    gap: 0.75rem;
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
 }
 
 .btn-accion {
-    flex-grow: 1;
-    text-align: center;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-    cursor: pointer;
+  flex-grow: 1;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
 }
 
 .btn-invertir {
-    background-color: #14C900;
-    color: #fff;
+  background-color: #14c900;
+  color: #fff;
 }
-.btn-invertir:hover { background-color: #14c900c3; }
+.btn-invertir:hover {
+  background-color: #14c900c3;
+}
 
 .btn-detalles {
-    background-color: transparent;
-    color: #14C900;
-    border-color: #14C900;
+  background-color: transparent;
+  color: #14c900;
+  border-color: #14c900;
 }
 .btn-detalles:hover {
-    background-color: #14C900;
-    color: #fff;
+  background-color: #14c900;
+  color: #fff;
 }
 
 .btn-logout {
-    background-color: #e74c3c; /* Un color rojo para indicar acción de salir */
-    color: #fff;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
+  background-color: #e74c3c; /* Un color rojo para indicar acción de salir */
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
 }
 
 .btn-logout:hover {
-    background-color: #c0392b; /* Un rojo más oscuro al pasar el ratón */
+  background-color: #c0392b; /* Un rojo más oscuro al pasar el ratón */
 }
 
 /* Estilos para errores de formulario */
@@ -325,7 +320,7 @@ form button:hover {
 
 /* Subtítulos dentro del detalle */
 .details-container strong {
-  color: #14C900; /* Verde para títulos */
+  color: #14c900; /* Verde para títulos */
   font-weight: 600;
   font-size: 1.05rem;
   letter-spacing: 0.5px;
@@ -344,7 +339,7 @@ form button:hover {
 
 /* Contenedor principal del detalle */
 .details-container {
-  background-color: #2A2A2A; /* Fondo oscuro */
+  background-color: #2a2a2a; /* Fondo oscuro */
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Más sombra */
@@ -369,7 +364,7 @@ form button:hover {
   font-weight: bold;
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #14C900;
+  color: #14c900;
   letter-spacing: 1px;
   text-transform: uppercase;
   text-shadow: 0 3px 6px rgba(20, 201, 0, 0.4);
@@ -413,42 +408,44 @@ form button:hover {
 /* Contenedor de botones */
 .actions-container {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
+.top-actions{
+  display: flex;
+  gap: 1rem;
+}
+
+.actions-container button {
+    padding: 0.8rem 1.8rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    color: #fff; 
+}
 /* Botones */
 .btn-support, .btn-like, .btn-favorite {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(90deg, #14C900, #00ff88);
-  color: #fff;
-  padding: 0.8rem 1.5rem;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(20, 201, 0, 0.4);
-  border: none;
-
-  /* mismo tamaño para todos */
-  min-width: 160px;
-  text-align: center;
-
-  /* Animación de entrada */
-  animation: fadeInUp 0.6s ease both;
+    background-color: #14c900; 
 }
 
-.btn-support:hover, .btn-like:hover, .btn-favorite:hover {
-  background: linear-gradient(90deg, #00ff88, #14C900);
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 255, 136, 0.6);
+.btn-support:hover,
+.btn-like:hover,
+.btn-favorite:hover {
+  background: linear-gradient(90deg, #03fa20, #14c900);
+  transform: translateY(-3px) scale(1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
-.btn-support i, .btn-like i, .btn-favorite i {
+.btn-support i,
+.btn-like i,
+.btn-favorite i {
   margin-right: 0.5rem;
   font-size: 1.2rem;
 }
@@ -513,8 +510,6 @@ form button:hover {
   margin-bottom: 1.5rem;
 }
 
-
-
 .progress-labels {
   display: flex;
   justify-content: space-between;
@@ -539,16 +534,6 @@ form button:hover {
   color: #14c900;
 }
 
-@media (max-width: 768px) {
-  .detalle-proyecto-body {
-    grid-template-columns: 1fr;
-  }
-
-  .detalle-proyecto-header h1 {
-    font-size: 2rem;
-  }
-}
-
 .form-divider {
   display: flex;
   align-items: center;
@@ -559,17 +544,17 @@ form button:hover {
 
 .form-divider::before,
 .form-divider::after {
-  content: '';
+  content: "";
   flex: 1;
   border-bottom: 1px solid #ddd;
 }
 
 .form-divider:not(:empty)::before {
-  margin-right: .5em;
+  margin-right: 0.5em;
 }
 
 .form-divider:not(:empty)::after {
-  margin-left: .5em;
+  margin-left: 0.5em;
 }
 
 /* Profile Menu */
@@ -594,14 +579,14 @@ form button:hover {
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border: 1px solid #444;
   border-radius: 8px;
   list-style: none;
   padding: 0.5rem 0;
   margin: 0.5rem 0 0;
   min-width: 150px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   z-index: 1001;
 }
 
@@ -616,7 +601,7 @@ form button:hover {
   text-align: left;
   padding: 0.75rem 1.5rem;
   text-decoration: none;
-  color: #F0F0F0;
+  color: #f0f0f0;
   background: none;
   border: none;
   cursor: pointer;
@@ -626,7 +611,7 @@ form button:hover {
 .profile-dropdown a:hover,
 .profile-dropdown .btn-logout:hover {
   background-color: #3a3a3a;
-  color: #14C900;
+  color: #14c900;
 }
 
 .profile-dropdown .btn-logout {
@@ -634,5 +619,233 @@ form button:hover {
 }
 
 .profile-dropdown .btn-logout:hover {
-   color: #c0392b;
+  color: #c0392b;
+}
+
+.profile-dropdown-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  color: #f0f0f0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.profile-dropdown-btn:hover {
+  background-color: #3a3a3a;
+  color: #14c900;
+}
+/* Perfil Page */
+.perfil-container form {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.perfil-container h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.perfil-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.perfil-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #f0f0f0;
+  font-weight: 600;
+}
+
+.perfil-form input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  border-radius: 4px;
+  color: #f0f0f0;
+  box-sizing: border-box;
+}
+
+.perfil-form input[type="file"] {
+  padding: 0.5rem;
+}
+
+.perfil-image-preview {
+  display: block;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1.5rem;
+  border: 3px solid #14c900;
+}
+
+.perfil-form .btn-actualizar {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #14c900;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.perfil-form .btn-actualizar:hover {
+  background-color: #12b300;
+}
+
+.perfil-form .btn-actualizar:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* --- Responsive Profile Menu Styles --- */
+
+.desktop-profile-menu {
+  display: list-item;
+}
+.mobile-profile-link,
+.mobile-logout {
+  display: none;
+}
+
+/* En pantallas móviles */
+@media (max-width: 768px) {
+  .detalle-proyecto-body {
+    grid-template-columns: 1fr;
+  }
+
+  .detalle-proyecto-header h1 {
+    font-size: 2rem;
+  }
+
+  .actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 0;
+  }
+
+  .top-actions {
+    display: flex;
+    gap: 1rem; 
+    justify-content: center;
+    width: 100%; 
+  }
+
+  .actions-container button {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    flex-grow: 1;
+    max-width: 45%;
+  }
+
+  .btn-favorite {
+    width: 90%;
+    max-width: 300px;
+    text-align: center;
+  }
+
+  .detalle-proyecto-container {
+    padding: 1rem;
+  }
+
+  .detalle-proyecto-img-container {
+    min-height: 200px;
+    margin-bottom: 1rem;
+  }
+
+  .detalle-proyecto-info .descripcion {
+    margin-bottom: 2rem;
+  }
+
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    align-items: center; /* Centra los items del menú */
+    width: 100%;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    background-color: #2a2a2a;
+    padding: 1rem 0; /* Ajustado para centrado correcto */
+    z-index: 999;
+    gap: 1.5rem; /* Aumenta el espacio vertical */
+  }
+
+  .navbar-links a {
+    font-size: 1.2rem; /* Aumenta el tamaño de la fuente */
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .menu-icon {
+    display: block;
+  }
+
+  /* Ocultar el menú desplegable de escritorio */
+  .desktop-profile-menu {
+    display: none;
+  }
+
+  .page-container {
+    padding: 0rem;
+    border-radius: 0px;
+    max-width: 100%;
+  }
+
+  .btn-like {
+  }
+  .mobile-profile-link,
+  .mobile-logout {
+    display: list-item;
+    list-style: none; /* Asegurarse de que no haya viñetas */
+    width: 100%;
+    text-align: center;
+  }
+
+  .mobile-profile-link a {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centra el contenido del enlace */
+    gap: 1rem;
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.2rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+
+  .mobile-profile-link a:hover {
+    background-color: #3a3a3a;
+  }
+
+  .mobile-username {
+    font-weight: 600;
+  }
+
+  .mobile-logout .btn-logout {
+    width: auto; /* O ajusta según sea necesario */
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+  }
 }

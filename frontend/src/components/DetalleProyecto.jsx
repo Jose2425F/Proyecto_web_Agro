@@ -92,10 +92,12 @@ const DetalleProyecto = () => {
             </div>
 
             <div className="actions-container">
+              <div className="top-actions">
               {project.estado !== 'En Progreso' && (
                   <button className="btn-support" onClick={handleInvest}>Invertir</button>
               )}
               <button className="btn-like" onClick={handleLike}>Dar Like</button>
+              </div>
               <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
             </div>
           </div>
