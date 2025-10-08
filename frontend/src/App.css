@@ -711,6 +711,14 @@ form button:hover {
   cursor: not-allowed;
 }
 
+.MuiBox-root form {
+  background-color: #201e1e00;
+}
+
+.REGISTROPROYECTO h4 {
+  color: #14c900;
+}
+
 /* --- Responsive Profile Menu Styles --- */
 
 .desktop-profile-menu {
