@@ -1,110 +1,125 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import '../App.css';
+import { supabase } from '../supabaseClient';
 
 const DetalleProyecto = () => {
-  const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const { id } = useParams();
+    const [project, setProject] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProjectDetails = async () => {
-      try {
-        const response = await fetch(`/Proyecto_web_Agro/php/proyecto_detalle.php?id=${id}`);
-        if (!response.ok) {
-          throw new Error('Error al obtener los detalles del proyecto');
-        }
-        const data = await response.json();
-        setProject(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchProjectDetails = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('proyectos')
+                    .select('*')
+                    .eq('id', id) 
+                    .single(); 
+
+                if (error) {
+                    throw new Error(`Error al obtener los detalles: ${error.message}`);
+                }
+                
+                if (!data) {
+                    throw new Error("Proyecto no encontrado.");
+                }
+                setProject(data); 
+
+            } catch (err) {
+                console.error("Error al cargar el detalle del proyecto:", err);
+                setError(err.message || 'Error al obtener los detalles del proyecto.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjectDetails();
+    }, [id]);
+
+    const handleInvest = () => {
+        alert('Gracias por tu interés en invertir en este proyecto.');
     };
 
-    fetchProjectDetails();
-  }, [id]);
+    const handleLike = () => {
+        alert('¡Has dado like a este proyecto!');
+    };
 
-  const handleInvest = () => {
-    alert('Gracias por tu interés en invertir en este proyecto.');
-  };
+    const handleFavorite = () => {
+        alert('Este proyecto ha sido agregado a tus favoritos.');
+    };
 
-  const handleLike = () => {
-    alert('¡Has dado like a este proyecto!');
-  };
+    if (loading) {
+        return <div className="page-container">Cargando...</div>;
+    }
 
-  const handleFavorite = () => {
-    alert('Este proyecto ha sido agregado a tus favoritos.');
-  };
+    if (error) {
+        return <div className="page-container">Error: {error}</div>;
+    }
+    
+    if (!project) {
+        return <div className="page-container">Proyecto no encontrado.</div>;
+    }
 
-  if (loading) {
-    return <div className="page-container">Cargando...</div>;
-  }
+    const progressPercentage = Math.min(100, Math.round((project.monto_recaudado / project.costos) * 100));
 
-  if (error) {
-    return <div className="page-container">Error: {error}</div>;
-  }
+    return (
+        <div className="page-container">
+            <div className="detalle-proyecto-container">
+                <div className="detalle-proyecto-header">
+                    <h1>{project.nombre}</h1>
+                    <span className={`estado-proyecto ${project.estado.toLowerCase().replace(' ', '-')}`}>
+                        {project.estado}
+                    </span>
+                </div>
 
-  const progressPercentage = Math.round((project.monto_recaudado / project.costos) * 100);
+                <div className="detalle-proyecto-body">
+                    <div className="detalle-proyecto-img-container">
+                        <img
+                            src={project.imagen_url} 
+                            alt={project.nombre}
+                            className="detalle-proyecto-img"
+                        />
+                    </div>
 
-  return (
-    <div className="page-container">
-      <div className="detalle-proyecto-container">
-        <div className="detalle-proyecto-header">
-          <h1>{project.nombre}</h1>
-          <span className={`estado-proyecto ${project.estado.toLowerCase().replace(' ', '-')}`}>
-            {project.estado}
-          </span>
+                    <div className="detalle-proyecto-info">
+                        <p className="descripcion">{project.descripcion}</p>
+                        
+                        <div className="progress-section">
+                            <div className="progress-bar-container">
+                                <div
+                                    className="progress-bar"
+                                    style={{ width: `${progressPercentage}%` }}
+                                ></div>
+                                <span className="progress-bar-text">{progressPercentage}%</span>
+                            </div>
+                            <div className="progress-labels">
+                                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.monto_recaudado)}</span>
+                                <span>Meta: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.costos)}</span>
+                            </div>
+                        </div>
+
+                        <div className="info-adicional">
+                            <p><strong>Producción Estimada:</strong> {project.produccion_estimada}</p>
+                            <p><strong>Fecha de Creación:</strong> {new Date(project.fecha_creacion).toLocaleDateString()}</p>
+                            <p><strong>Likes:</strong> {project.likes_count}</p>
+                        </div>
+
+                        <div className="actions-container">
+                            <div className="top-actions">
+                            {project.estado !== 'En Progreso' && (
+                                    <button className="btn-support" onClick={handleInvest}>Invertir</button>
+                            )}
+                            <button className="btn-like" onClick={handleLike}>Dar Like</button>
+                            </div>
+                            <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div className="detalle-proyecto-body">
-          <div className="detalle-proyecto-img-container">
-            <img
-              src={`/` + project.imagen_url.replace(/\\/g, '/')}
-              alt={project.nombre}
-              className="detalle-proyecto-img"
-            />
-          </div>
-
-          <div className="detalle-proyecto-info">
-            <p className="descripcion">{project.descripcion}</p>
-            
-            <div className="progress-section">
-              <div className="progress-bar-container">
-                <div
-                  className="progress-bar"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-                <span className="progress-bar-text">{progressPercentage}%</span>
-              </div>
-              <div className="progress-labels">
-                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.monto_recaudado)}</span>
-                <span>Meta: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.costos)}</span>
-              </div>
-            </div>
-
-            <div className="info-adicional">
-              <p><strong>Producción Estimada:</strong> {project.produccion_estimada}</p>
-              <p><strong>Fecha de Creación:</strong> {new Date(project.fecha_creacion).toLocaleDateString()}</p>
-              <p><strong>Likes:</strong> {project.likes_count}</p>
-            </div>
-
-            <div className="actions-container">
-              <div className="top-actions">
-              {project.estado !== 'En Progreso' && (
-                  <button className="btn-support" onClick={handleInvest}>Invertir</button>
-              )}
-              <button className="btn-like" onClick={handleLike}>Dar Like</button>
-              </div>
-              <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default DetalleProyecto;
