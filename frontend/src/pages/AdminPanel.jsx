@@ -181,10 +181,14 @@ const AdminPanel = () => {
     if (
       !project.nombre ||
       !project.descripcion ||
-      project.costos === null ||
-      project.monto_recaudado === null
+      !project.costos ||
+      !project.monto_recaudado 
     ) {
       showAlert("error", "Error de Validación", "El nombre, descripción, costos y monto recaudado no pueden estar vacíos.")
+      return
+    }
+    if (project.costos < 0 || project.monto_recaudado < 0) {
+      showAlert("error", "Error de Validación", "Los costos o el monto recaudado no pueden ser valores negativos.")
       return
     }
 
@@ -571,7 +575,7 @@ const AdminPanel = () => {
                           </div>
                           <div className="form-actions">
                             <button className="btn-save" onClick={() => handleUpdateProject(editingProject)}>
-                              <i className="fas fa-check"></i> Guardar
+                              <i className="fas fa-check"></i> Actualizar
                             </button>
                             <button className="btn-cancel" onClick={() => setEditingProject(null)}>
                               <i className="fas fa-times"></i> Cancelar
