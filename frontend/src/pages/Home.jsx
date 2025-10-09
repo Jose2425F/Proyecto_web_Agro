@@ -143,7 +143,7 @@ const Home = () => {
   }
 
   return (
-    <div className="pageContainer">
+    <div className="pageContainer home-page">
       <div className="background-decoration">
         <div className="floating-shape shape-1"></div>
         <div className="floating-shape shape-2"></div>

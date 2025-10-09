@@ -101,7 +101,7 @@
 }
 
 /* --- Contenedor Principal --- */
-.pageContainer {
+.home-page .pageContainer {
   /* max-width: 1400px; */
   margin: 0 auto;
   padding: 0;
@@ -114,7 +114,7 @@
 }
 
 /* --- Elementos Decorativos de Fondo --- */
-.background-decoration {
+.home-page .background-decoration {
   position: fixed;
   top: 0;
   left: 0;
@@ -125,14 +125,14 @@
   overflow: hidden;
 }
 
-.floating-shape {
+.home-page .floating-shape {
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(20, 201, 0, 0.15) 0%, transparent 70%);
   animation: floatSlow 20s ease-in-out infinite;
 }
 
-.shape-1 {
+.home-page .shape-1 {
   width: 300px;
   height: 300px;
   top: 10%;
@@ -140,7 +140,7 @@
   animation-delay: 0s;
 }
 
-.shape-2 {
+.home-page .shape-2 {
   width: 200px;
   height: 200px;
   top: 60%;
@@ -148,7 +148,7 @@
   animation-delay: 5s;
 }
 
-.shape-3 {
+.home-page .shape-3 {
   width: 250px;
   height: 250px;
   bottom: 10%;
@@ -156,7 +156,7 @@
   animation-delay: 10s;
 }
 
-.shape-4 {
+.home-page .shape-4 {
   width: 180px;
   height: 180px;
   top: 40%;
@@ -165,7 +165,7 @@
 }
 
 /* --- Loading Container Mejorado --- */
-.loadingContainer {
+.home-page .loadingContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -174,7 +174,7 @@
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
 }
 
-.loader-spinner {
+.home-page .loader-spinner {
   width: 60px;
   height: 60px;
   border: 4px solid rgba(20, 201, 0, 0.1);
@@ -183,7 +183,7 @@
   animation: spin 1s linear infinite;
 }
 
-.loading-text {
+.home-page .loading-text {
   margin-top: 1.5rem;
   font-size: 1.1rem;
   color: #14c900;
@@ -191,7 +191,7 @@
 }
 
 /* --- Header Mejorado --- */
-.header {
+.home-page .header {
   position: relative;
   background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
   color: white;
@@ -201,7 +201,7 @@
   z-index: 1;
 }
 
-.header::before {
+.home-page .header::before {
   content: "";
   position: absolute;
   top: 0;
@@ -213,7 +213,7 @@
   pointer-events: none;
 }
 
-.header-content {
+.home-page .header-content {
   position: relative;
   z-index: 2;
   max-width: 900px;
@@ -221,7 +221,7 @@
   text-align: center;
 }
 
-.header-badge {
+.home-page .header-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -233,19 +233,19 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
-.badge-icon {
+.home-page .badge-icon {
   font-size: 1.2rem;
   animation: float 3s ease-in-out infinite;
 }
 
-.badge-text {
+.home-page .badge-text {
   font-size: 0.9rem;
   font-weight: 600;
   color: #14c900;
   letter-spacing: 0.5px;
 }
 
-.header-title {
+.home-page .header-title {
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
   font-weight: 800;
@@ -256,13 +256,13 @@
   gap: 0.5rem;
 }
 
-.title-line-1 {
+.home-page .title-line-1 {
   font-size: 2rem;
   font-weight: 400;
   color: #cccccc;
 }
 
-.title-line-2 {
+.home-page .title-line-2 {
   font-size: 4rem;
   background: linear-gradient(135deg, #14c900 0%, #0fa300 100%);
   -webkit-background-clip: text;
@@ -272,13 +272,13 @@
   background-size: 200% auto;
 }
 
-.greeting-text {
+.home-page .greeting-text {
   font-size: 2rem;
   font-weight: 400;
   color: #cccccc;
 }
 
-.user-name-highlight {
+.home-page .user-name-highlight {
   font-size: 3.5rem;
   background: linear-gradient(135deg, #14c900 0%, #0fa300 100%);
   -webkit-background-clip: text;
@@ -286,7 +286,7 @@
   background-clip: text;
 }
 
-.header-description {
+.home-page .header-description {
   font-size: 1.3rem;
   color: #cccccc;
   max-width: 700px;
@@ -296,7 +296,7 @@
 }
 
 /* --- Estadísticas Animadas --- */
-.stats-container {
+.home-page .stats-container {
   display: flex;
   justify-content: center;
   gap: 3rem;
@@ -304,11 +304,11 @@
   animation: fadeInUp 1.4s ease-out 0.6s backwards;
 }
 
-.stat-item {
+.home-page .stat-item {
   text-align: center;
 }
 
-.stat-number {
+.home-page .stat-number {
   font-size: 3rem;
   font-weight: 800;
   color: #14c900;
@@ -316,14 +316,14 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
-.stat-label {
+.home-page .stat-label {
   font-size: 0.9rem;
   color: #999;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.header-wave {
+.home-page .header-wave {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -333,25 +333,25 @@
   transform: rotate(180deg); /* Opcional: Para voltear la ola hacia abajo si es necesario */
 }
 
-.header-wave svg {
+.home-page .header-wave svg {
   position: relative;
   display: block;
   width: calc(100% + 1.3px);
   height: 90px; /* Aumentar la altura para que la curva sea más visible */
 }
 
-.header-wave .shape-fill {
+.home-page .header-wave .shape-fill {
   fill: #1a1a1a; /* Asegúrate de que este color coincida con el fondo de tu sección de abajo */
 }
 
 /* --- Sección de Características --- */
-.features-wrapper {
+.home-page .features-wrapper {
   position: relative;
   z-index: 1;
   padding: 3rem 2rem;
 }
 
-.section-title {
+.home-page .section-title {
   text-align: center;
   margin-bottom: 3rem;
   font-size: 2.5rem;
@@ -359,13 +359,13 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
-.title-decoration {
+.home-page .title-decoration {
   position: relative;
   display: inline-block;
   padding-bottom: 1rem;
 }
 
-.title-decoration::after {
+.home-page .title-decoration::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -377,7 +377,7 @@
   border-radius: 2px;
 }
 
-.featuresSection {
+.home-page .featuresSection {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2.5rem;
@@ -387,7 +387,7 @@
 }
 
 /* --- Tarjetas Mejoradas con Efectos 3D --- */
-.featureCard {
+.home-page .featureCard {
   position: relative;
   background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
   border: 1px solid rgba(20, 201, 0, 0.2);
@@ -400,11 +400,11 @@
   transform-style: preserve-3d;
 }
 
-.card-animate {
+.home-page .card-animate {
   animation: fadeInUp 0.8s ease-out backwards;
 }
 
-.card-glow {
+.home-page .card-glow {
   position: absolute;
   top: -50%;
   left: -50%;
@@ -416,18 +416,18 @@
   pointer-events: none;
 }
 
-.featureCard:hover {
+.home-page .featureCard:hover {
   transform: translateY(-15px) scale(1.02);
   box-shadow: 0 20px 60px rgba(20, 201, 0, 0.3);
   border-color: rgba(20, 201, 0, 0.5);
 }
 
-.featureCard:hover .card-glow {
+.home-page .featureCard:hover .card-glow {
   opacity: 1;
   animation: pulse 2s ease-in-out infinite;
 }
 
-.card-icon {
+.home-page .card-icon {
   width: 80px;
   height: 80px;
   margin: 0 auto 1.5rem;
@@ -439,26 +439,26 @@
   transition: all 0.4s ease;
 }
 
-.card-icon svg {
+.home-page .card-icon svg {
   width: 40px;
   height: 40px;
   color: #14c900;
   transition: all 0.4s ease;
 }
 
-.featureCard:hover .card-icon {
+.home-page .featureCard:hover .card-icon {
   transform: rotateY(360deg) scale(1.1);
   background: linear-gradient(135deg, rgba(20, 201, 0, 0.3) 0%, rgba(20, 201, 0, 0.1) 100%);
 }
 
-.featureCard h3 {
+.home-page .featureCard h3 {
   color: #ffffff;
   font-size: 1.8rem;
   margin: 1.5rem 0 1rem;
   font-weight: 700;
 }
 
-.featureCard p {
+.home-page .featureCard p {
   color: #cccccc;
   margin-bottom: 2rem;
   line-height: 1.6;
@@ -466,7 +466,7 @@
 }
 
 /* --- Botones Mejorados --- */
-.btn-accion {
+.home-page .btn-accion {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -482,30 +482,30 @@
   border: 2px solid;
 }
 
-.btn-text {
+.home-page .btn-text {
   position: relative;
   z-index: 2;
 }
 
-.btn-arrow {
+.home-page .btn-arrow {
   position: relative;
   z-index: 2;
   transition: transform 0.3s ease;
   font-size: 1.2rem;
 }
 
-.btn-accion:hover .btn-arrow {
+.home-page .btn-accion:hover .btn-arrow {
   transform: translateX(5px);
 }
 
-.btn-invertir {
+.home-page .btn-invertir {
   background: linear-gradient(135deg, #14c900 0%, #0fa300 100%);
   border-color: #14c900;
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(20, 201, 0, 0.3);
 }
 
-.btn-invertir::before {
+.home-page .btn-invertir::before {
   content: "";
   position: absolute;
   top: 0;
@@ -516,16 +516,16 @@
   transition: left 0.5s ease;
 }
 
-.btn-invertir:hover::before {
+.home-page .btn-invertir:hover::before {
   left: 100%;
 }
 
-.btn-invertir:hover {
+.home-page .btn-invertir:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(20, 201, 0, 0.5);
 }
 
-.btn-detalles {
+.home-page .btn-detalles {
   background: transparent;
   border-color: #14c900;
   color: #14c900;
@@ -533,7 +533,7 @@
   overflow: hidden;
 }
 
-.btn-detalles::before {
+.home-page .btn-detalles::before {
   content: "";
   position: absolute;
   top: 0;
@@ -545,25 +545,25 @@
   z-index: 1;
 }
 
-.btn-detalles:hover::before {
+.home-page .btn-detalles:hover::before {
   width: 100%;
 }
 
-.btn-detalles:hover {
+.home-page .btn-detalles:hover {
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(20, 201, 0, 0.3);
 }
 
 /* --- Nueva Sección de Beneficios --- */
-.benefits-section {
+.home-page .benefits-section {
   position: relative;
   z-index: 1;
   padding: 5rem 2rem;
   margin-top: 4rem;
 }
 
-.benefits-grid {
+.home-page .benefits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
@@ -571,7 +571,7 @@
   margin: 0 auto;
 }
 
-.benefit-item {
+.home-page .benefit-item {
   text-align: center;
   padding: 2rem;
   background: rgba(42, 42, 42, 0.5);
@@ -581,40 +581,40 @@
   animation: fadeInUp 0.8s ease-out backwards;
 }
 
-.benefit-item:nth-child(1) {
+.home-page .benefit-item:nth-child(1) {
   animation-delay: 0.1s;
 }
-.benefit-item:nth-child(2) {
+.home-page .benefit-item:nth-child(2) {
   animation-delay: 0.2s;
 }
-.benefit-item:nth-child(3) {
+.home-page .benefit-item:nth-child(3) {
   animation-delay: 0.3s;
 }
-.benefit-item:nth-child(4) {
+.home-page .benefit-item:nth-child(4) {
   animation-delay: 0.4s;
 }
 
-.benefit-item:hover {
+.home-page .benefit-item:hover {
   transform: translateY(-10px);
   background: rgba(42, 42, 42, 0.8);
   border-color: rgba(20, 201, 0, 0.3);
   box-shadow: 0 10px 30px rgba(20, 201, 0, 0.2);
 }
 
-.benefit-icon {
+.home-page .benefit-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
   animation: float 3s ease-in-out infinite;
 }
 
-.benefit-item h4 {
+.home-page .benefit-item h4 {
   color: #14c900;
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
-.benefit-item p {
+.home-page .benefit-item p {
   color: #cccccc;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -622,105 +622,105 @@
 
 /* --- Responsive Design --- */
 @media (max-width: 992px) {
-  .header-title {
+  .home-page .header-title {
     font-size: 2.5rem;
   }
 
-  .title-line-2 {
+  .home-page .title-line-2 {
     font-size: 3rem;
   }
 
-  .stats-container {
+  .home-page .stats-container {
     gap: 2rem;
   }
 
-  .stat-number {
+  .home-page .stat-number {
     font-size: 2.5rem;
   }
 }
 
 @media (max-width: 768px) {
-  .pageContainer {
+  .home-page .pageContainer {
     padding: 0;
   }
 
-  .header {
+  .home-page .header {
     padding: 3rem 1.5rem 6rem;
     margin-bottom: 2rem;
   }
 
-  .header-title {
+  .home-page .header-title {
     font-size: 2rem;
   }
 
-  .title-line-1 {
+  .home-page .title-line-1 {
     font-size: 1.5rem;
   }
 
-  .title-line-2 {
+  .home-page .title-line-2 {
     font-size: 2.5rem;
   }
 
-  .greeting-text {
+  .home-page .greeting-text {
     font-size: 1.5rem;
   }
 
-  .user-name-highlight {
+  .home-page .user-name-highlight {
     font-size: 2.5rem;
   }
 
-  .header-description {
+  .home-page .header-description {
     font-size: 1.1rem;
   }
 
-  .stats-container {
+  .home-page .stats-container {
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  .section-title {
+  .home-page .section-title {
     font-size: 2rem;
   }
 
-  .featuresSection {
+  .home-page .featuresSection {
     grid-template-columns: 1fr;
     gap: 2rem;
     padding: 0 1rem;
   }
 
-  .featureCard {
+  .home-page .featureCard {
     padding: 2.5rem 1.5rem;
   }
 
-  .benefits-grid {
+  .home-page .benefits-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
-  .floating-shape {
+  .home-page .floating-shape {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .header-title {
+  .home-page .header-title {
     font-size: 1.8rem;
   }
 
-  .title-line-2 {
+  .home-page .title-line-2 {
     font-size: 2rem;
   }
 
-  .stat-number {
+  .home-page .stat-number {
     font-size: 2rem;
   }
 
-  .card-icon {
+  .home-page .card-icon {
     width: 60px;
     height: 60px;
   }
 
-  .card-icon svg {
+  .home-page .card-icon svg {
     width: 30px;
     height: 30px;
   }
