@@ -15,7 +15,6 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  // 1️⃣ Leer el userId de localStorage al montar
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
