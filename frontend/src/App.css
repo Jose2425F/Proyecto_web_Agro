@@ -142,6 +142,12 @@ form select {
   box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
 }
 
+.form-container_impuest input{
+  background-color: #ffffff;
+  color: #020202;
+  border: 1px solid #949494;
+}
+
 form button {
   width: 100%;
   padding: 0.9rem;

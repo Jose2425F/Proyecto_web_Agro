@@ -123,9 +123,9 @@ const Login = () => {
   };
 
   return (
-    <div>
+    <div className="form-container_impuest">
       <form onSubmit={handleSubmit}>
-        <div>
+        <div >
           <h1>Iniciar Sesión</h1>
           <label>Correo Electrónico</label>
           <input

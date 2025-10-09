@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Perfil from './pages/Perfil';
 import MisProyectos from './pages/MisProyectos';
 import CrearProyectos from './pages/Crear_Proyectos';
+import AdminPanel from './pages/AdminPanel';
+import GestionarProyecto from './components/GestionarProyecto';
 import './App.css';
 function App() {
   return (
@@ -20,10 +22,12 @@ function App() {
         <Route element={<><Navbar /><Outlet /></>}>
           <Route path="/home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<DetalleProyecto />} /> {/* Ruta dinámica */}
+          <Route path="/projects/:id" element={<DetalleProyecto />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/mis-proyectos" element={<MisProyectos />} />
           <Route path="/crear-proyecto" element={<CrearProyectos />} />
+          <Route path="/admin-panel" element={<AdminPanel />} />
+          <Route path="/gestionar/:id" element={<GestionarProyecto />} />
         </Route>
       </Routes>
     </Router>

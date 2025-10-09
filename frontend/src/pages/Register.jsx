@@ -177,7 +177,7 @@ const Register = () => {
   };
 
   return (
-    <div>
+    <div className="form-container_impuest">
       <form onSubmit={handleSubmit}>
         <h1>Crear Cuenta</h1>
 
@@ -359,10 +359,11 @@ const Register = () => {
             width="436"
           />
         </div>
-
+        <div className="color_p">
         <p>
-          ¿Ya tienes una cuenta? <Link to="/login">Inicia Sesión</Link>
+          ¿Ya tienes una cuenta? <Link to="/login" className="custom-link">Inicia Sesión</Link>
         </p>
+        </div>
       </form>
       {alertInfo.message && (
         <div style={{ position: "fixed", top: 20, right: 20, zIndex: 1000 }}>
