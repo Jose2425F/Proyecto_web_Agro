@@ -123,6 +123,14 @@ const AdminPanel = () => {
       return
     }
 
+    if (
+      currentUser.rol === 'administrador' && 
+      (editingUser.rol.includes('administrador') || user.rol.includes('administrador')) && 
+      editingUser.rol !== user.rol 
+    ) {
+      showAlert("error", "Acceso Denegado", "Un administrador regular solo puede cambiar el rol de Campesinos o Inversionistas.")
+      return
+    }
     try {
       const { error } = await supabase
         .from("usuarios")
@@ -160,6 +168,9 @@ const AdminPanel = () => {
     }
 
     if (currentUser.rol === "administrador") {
+      if (users.find(u => u.id === editingUserId)?.rol.includes('administrador')) {
+          return [users.find(u => u.id === editingUserId)?.rol]
+      }
       return ["inversionista", "campesino"]
     }
 
@@ -466,7 +477,9 @@ const AdminPanel = () => {
                             </div>
                           </div>
                           <div className="card-actions">
-                            <button className="btn-edit" onClick={() => setEditingUser({ ...user })}>
+                            <button className="btn-edit" onClick={() => setEditingUser({ ...user })}
+                              disabled={user.rol === 'administradorsupremo' && currentUser?.rol !== 'administradorsupremo'}
+                              >
                               <i className="fas fa-edit"></i> Editar
                             </button>
                           </div>

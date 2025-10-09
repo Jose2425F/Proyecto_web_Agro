@@ -629,6 +629,12 @@
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(20, 201, 0, 0.3);
 }
+.btn-edit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  /* color: #fff; */
+  background-color: #ccc;
+}
 
 .btn-delete {
   background: transparent;
