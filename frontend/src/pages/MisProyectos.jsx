@@ -194,10 +194,13 @@ const MisProyectos = () => {
 
                 <div className="card-actions">
                   {proyecto.estado === "Buscando Inversión" && (
-                    <button className="btn-accion btn-invertir" disabled>
+                    <button 
+                      className="btn-accion btn-invertir"
+                      onClick={() => navigate(`/gestionar/${proyecto.id}`)}
+                    >
                       Gestionar
                     </button>
-                  )}
+                )}
                   <button
                     className="btn-accion btn-detalles"
                     onClick={() => navigate(`/projects/${proyecto.id}`)}

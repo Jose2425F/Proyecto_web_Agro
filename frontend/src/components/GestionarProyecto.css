@@ -1,0 +1,172 @@
+.page-container { 
+  min-height: 100vh;
+  background-color: #0d0d0d00;
+  padding: 40px;
+  color: #e5e5e5;
+  font-family: "Inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  color: #14c900;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.project-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  background-color: #1a1a1a;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px #14c900;
+  width: 90%;
+  max-width: 1300px;
+  justify-content: space-between;
+}
+
+/* Tres columnas */
+.form-left,
+.form-center,
+.form-right {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  color: #14c900;
+  font-weight: 500;
+}
+
+input,
+textarea {
+  background-color: #121212;
+  color: #e5e5e5;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  resize: none;
+  transition: border-color 0.3s;
+}
+
+/* 👇 AQUÍ puedes modificar el tamaño del cuadro de descripción */
+textarea[name="descripcion"] {
+  min-height: 600px; /* 👈 cambia este valor para ajustar la altura */
+  width: 220%;       /* usa 100% para que se adapte al contenedor */
+  resize: vertical;  /* permite cambiar el tamaño verticalmente */
+  line-height: 1.5;
+  font-size: 1rem;
+}
+
+/* Si prefieres una altura fija que no se pueda cambiar */
+ /*
+textarea[name="descripcion"] {
+  height: 500px;
+  resize: none;
+}
+ */
+
+input:focus,
+textarea:focus {
+  border-color: #14c900;
+  outline: none;
+}
+
+.auto-textarea {
+  overflow-y: hidden;
+  line-height: 1.5;
+}
+
+.image-preview {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #14c900;
+}
+
+.btn-update {
+  background-color: #14c900;
+  border: none;
+  color: #000;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-update:hover {
+  background-color: #14c900;
+}
+
+/* Contenedor que une descripción e imagen */
+.descripcion-imagen {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Descripción */
+.descripcion-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea[name="descripcion"] {
+  min-height: 250px;
+  resize: vertical;
+}
+
+/* Imagen al lado de la descripción */
+.preview-container {
+  flex-shrink: 0;
+}
+
+.preview-img {
+  width: 250px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #14c900;
+}
+
+.preview-container-right {
+  margin: 15px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #14c900;
+}
+
+/* Estilos para alertas */
+.admin-panel-alerts {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+}

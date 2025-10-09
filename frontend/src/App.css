@@ -857,3 +857,63 @@ form button:hover {
     font-size: 1.1rem;
   }
 }
+
+/* Estilos específicos para gestionar  proyectos */
+
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #2A2A2A;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  color: #14C900;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #616161;
+  background-color: #1A1A1A;
+  color: #d1d1d1;
+}
+
+.btn-update {
+  display: inline-block;
+  background: linear-gradient(90deg, #14C900, #14c900);
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-update:hover {
+  background: linear-gradient(90deg, #14c900, #14C900);
+  transform: scale(1.05);
+}
+
+.image-preview {
+  margin-top: 1rem;
+}
+
+.preview-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
