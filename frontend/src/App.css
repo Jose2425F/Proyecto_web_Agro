@@ -52,6 +52,14 @@ h1 {
   color: #14c900;
   font-weight: 700;
   font-size: 1.6rem;
+  display: flex; 
+  align-items: center; 
+  gap: 0.5rem;
+}
+.logo{
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
 .navbar-links {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useUser } from "../hooks/useUser.js";
+import { FaSeedling } from "react-icons/fa6";
 import "./Home.css";
 
 const Home = () => {
@@ -154,8 +155,9 @@ const Home = () => {
       <header className="header">
         <div className="header-content">
           <div className="header-badge">
-            <span className="badge-icon">🌱</span>
-            <span className="badge-text">Plataforma AgroInversión</span>
+            <span className="badge-icon"><FaSeedling color="#14c900" size={25}/></span>
+            <span className="badge-text">Plataforma AgroColombia</span>
+            <span className="badge-icon"><FaSeedling color="#14c900" size={25}/></span>
           </div>
           <h1 className="header-title">
             {userName ? (
@@ -166,7 +168,7 @@ const Home = () => {
             ) : (
               <>
                 <span className="title-line-1">Bienvenido a</span>
-                <span className="title-line-2">AgroInversión</span>
+                <span className="title-line-2">AgroColombia</span>
               </>
             )}
           </h1>
