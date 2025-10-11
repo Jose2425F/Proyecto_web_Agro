@@ -50,12 +50,12 @@
 }
 
 .modal-actions button:first-child {
-  background-color: #28a745;
+  background-color: #14c900;
   color: white;
 }
 
 .modal-actions button:last-child {
-  background-color: #007bff;
+  background-color: #14c900;
   color: white;
 }
 
@@ -73,5 +73,6 @@
 }
 
 .close-button:hover {
-  color: #333;
+  background: #c70202;
+  color: white;
 }
