@@ -11,6 +11,8 @@ import MisProyectos from './pages/MisProyectos';
 import CrearProyectos from './pages/Crear_Proyectos';
 import AdminPanel from './pages/AdminPanel';
 import GestionarProyecto from './components/GestionarProyecto';
+import Inversiones from './pages/Inversiones';
+
 import './App.css';
 function App() {
   return (
@@ -30,6 +32,7 @@ function App() {
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/gestionar/:id" element={<GestionarProyecto />} />
           <Route path="/invertir/:id" element={<InvertirProyecto />} />
+          <Route path="/inversiones" element={<Inversiones />} />
         </Route>
       </Routes>
     </Router>

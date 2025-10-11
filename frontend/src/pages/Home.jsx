@@ -20,7 +20,7 @@ const Home = () => {
     try {
       const { data, error } = await supabase
         .from("inversiones")
-        .select("user_id", { distinct: true });
+        .select("id", { distinct: true });
 
       if (error) throw error;
       return data ? data.length : 0;

@@ -18,12 +18,15 @@ const InvertirProyecto = () => {
   const [mostrarTerminos, setMostrarTerminos] = useState(false)
   const [userData, setUserData] = useState(null)
   const [proyectoURL, setProyectoUrl] = useState(null)
+  const [userRole, setUserRole] = useState(null)
 
   const [formData, setFormData] = useState({
     tipoInversion: "",
     monto: "",
     aceptaTerminos: false,
   })
+
+  const [montoFormateado, setMontoFormateado] = useState("")
 
   const generarPDF = async (comprobante) => {
     const doc = new jsPDF("p", "mm", "a4")
@@ -50,12 +53,8 @@ const InvertirProyecto = () => {
 
     // Logo
     const logoURL = "https://lzgmqtmnstiykakpmxfa.supabase.co/storage/v1/object/public/avatars/logo/logo.png"
-    try {
-      doc.addImage(logoURL, "PNG", 20, 15, 25, 25)
-    } catch (error) {
-      console.log("Logo no disponible")
-    }
-
+    doc.addImage(logoURL, "PNG", 20, 15, 25, 25)
+    
     // Empresa
     doc.setFont("helvetica", "bold")
     doc.setFontSize(16)
@@ -258,6 +257,31 @@ const InvertirProyecto = () => {
     fetchProjectDetails()
   }, [id])
 
+  const formatearMonto = (valor) => {
+    // Remover todo excepto números
+    const numeroLimpio = valor.replace(/\D/g, "")
+
+    // Si está vacío, retornar vacío
+    if (!numeroLimpio) return ""
+
+    // Convertir a número y formatear con separadores de miles
+    return Number(numeroLimpio).toLocaleString("es-CO")
+  }
+
+  const handleMontoChange = (e) => {
+    const valor = e.target.value
+    const numeroLimpio = valor.replace(/\D/g, "")
+
+    // Actualizar el valor numérico real
+    setFormData({
+      ...formData,
+      monto: numeroLimpio,
+    })
+
+    // Actualizar el valor formateado para mostrar
+    setMontoFormateado(formatearMonto(valor))
+  }
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData({
@@ -274,6 +298,7 @@ const InvertirProyecto = () => {
         if (error) throw error
         if (data) {
           setUserData(data.nombre + " " + data.apellido)
+          setUserRole(data.rol)
         }
       } catch (err) {
         console.error("Error al obtener el usuario:", err.message)
@@ -285,6 +310,13 @@ const InvertirProyecto = () => {
   // Enviar inversión y mostrar comprobante
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (userRole !== "inversionista") {
+      alert(
+        "Solo los usuarios con rol de inversionista pueden realizar inversiones.\nPor favor, contacta al administrador para actualizar tu rol.",
+      )
+      return
+    }
 
     if (!formData.tipoInversion) {
       alert("Selecciona un tipo de inversión.")
@@ -303,7 +335,18 @@ const InvertirProyecto = () => {
       alert(
         `El monto mínimo para ser ${
           formData.tipoInversion === "dueno_unico" ? "Dueño Único" : "Accionista"
-        } es ${minimo.toLocaleString()}`,
+        } es $${minimo.toLocaleString("es-CO")}`,
+      )
+      return
+    }
+
+    const montoDisponible = project.costos - project.monto_recaudado
+    if (montoNum > montoDisponible) {
+      alert(
+        `⚠️ El monto excede el capital disponible del proyecto.\n\n` +
+          `💰 Disponible: $${montoDisponible.toLocaleString("es-CO")}\n` +
+          `❌ Intentaste invertir: $${montoNum.toLocaleString("es-CO")}\n\n` +
+          `Por favor, ingresa un monto menor o igual al disponible.`,
       )
       return
     }
@@ -327,6 +370,23 @@ const InvertirProyecto = () => {
         throw error
       }
 
+      const nuevoMontoRecaudado = project.monto_recaudado + montoNum
+
+      const { error: updateError } = await supabase
+        .from("proyectos")
+        .update({ monto_recaudado: nuevoMontoRecaudado })
+        .eq("id", id)
+
+      if (updateError) {
+        console.error("❌ Error al actualizar monto_recaudado:", updateError.message)
+        alert("La inversión se registró pero hubo un error al actualizar el proyecto")
+        throw updateError
+      }
+
+      console.log("[v0] ✅ Inversión registrada y monto_recaudado actualizado correctamente")
+
+      setProject({ ...project, monto_recaudado: nuevoMontoRecaudado })
+
       setComprobante({
         nombreUsuario: userData,
         nombreProyecto: project.nombre,
@@ -335,7 +395,7 @@ const InvertirProyecto = () => {
         fecha: new Date().toLocaleString(),
       })
     } catch (err) {
-      console.error("Error general:", error)
+      console.error("Error general:", err)
       alert("Error al registrar la inversión.")
     }
   }
@@ -366,6 +426,8 @@ const InvertirProyecto = () => {
       : formData.tipoInversion === "accionista"
         ? project.costos * 0.1
         : null
+
+  const montoDisponible = project.costos - project.monto_recaudado
 
   return (
     <div className="invertir-container">
@@ -508,6 +570,22 @@ const InvertirProyecto = () => {
 
             {/* Columna derecha - Formulario de inversión */}
             <div className="right-column">
+              {userRole && userRole !== "inversionista" && (
+                <div className="role-warning">
+                  <div className="warning-icon">⚠️</div>
+                  <div className="warning-content">
+                    <h3>Acceso Restringido</h3>
+                    <p>
+                      Solo los usuarios con rol de <strong>inversionista</strong> pueden realizar inversiones.
+                    </p>
+                    <p>
+                      Tu rol actual es: <strong>{userRole}</strong>
+                    </p>
+                    <p>Contacta al administrador para actualizar tu rol.</p>
+                  </div>
+                </div>
+              )}
+
               <form className="investment-form-modern" onSubmit={handleSubmit}>
                 <div className="form-header">
                   <div className="form-icon">💎</div>
@@ -583,13 +661,12 @@ const InvertirProyecto = () => {
                   <div className="input-wrapper">
                     <span className="input-prefix">$</span>
                     <input
-                      type="number"
+                      type="text"
                       id="monto"
                       name="monto"
-                      value={formData.monto}
-                      onChange={handleChange}
+                      value={montoFormateado}
+                      onChange={handleMontoChange}
                       placeholder="0"
-                      min="0"
                       required
                     />
                     <span className="input-suffix">COP</span>
@@ -600,7 +677,8 @@ const InvertirProyecto = () => {
                         <circle cx="12" cy="12" r="10" />
                         <path d="M12 16v-4M12 8h.01" />
                       </svg>
-                      Monto mínimo requerido: ${montoMinimo.toLocaleString("es-CO")}
+                      Monto mínimo: ${montoMinimo.toLocaleString("es-CO")} • Disponible: $
+                      {montoDisponible.toLocaleString("es-CO")}
                     </div>
                   )}
                 </div>
@@ -664,7 +742,11 @@ const InvertirProyecto = () => {
                   </div>
                 </div>
 
-                <button type="submit" className="btn-submit" disabled={!formData.aceptaTerminos}>
+                <button
+                  type="submit"
+                  className="btn-submit"
+                  disabled={!formData.aceptaTerminos || (userRole && userRole !== "inversionista")}
+                >
                   <span>Confirmar Inversión</span>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -713,7 +795,8 @@ const InvertirProyecto = () => {
                 <div className="detail-row">
                   <span className="detail-label">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <path d="M21 16V8a2 2 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
                     </svg>
                     Proyecto
                   </span>
