@@ -1,0 +1,149 @@
+.invertir-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0d0d0d, #013b0d);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  .title {
+    font-size: 2rem;
+    color: #00ff88;
+    margin-bottom: 30px;
+  }
+  
+  .investment-form {
+    background: rgba(25, 25, 25, 0.8);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 15px #00ff88;
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .form-row label {
+    color: #00ff88;
+    font-weight: bold;
+  }
+  
+  .form-row input,
+  .form-row select {
+    background: #111;
+    color: white;
+    border: 1px solid #00ff88;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  .info-text {
+    color: #8fffc8;
+    font-style: italic;
+    text-align: center;
+  }
+  
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .link {
+    color: #00ff88;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  .terminos-list {
+    background: #0e0e0e;
+    border-left: 3px solid #00ff88;
+    padding: 10px 15px;
+    border-radius: 10px;
+    list-style: none;
+    color: #b9ffde;
+    font-size: 0.9rem;
+  }
+  
+  .btn-confirmar {
+    margin-top: 20px;
+    background: #00ff88;
+    color: black;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+  }
+  
+  .btn-confirmar:hover {
+    background: #00cc6a;
+  }
+  
+  .comprobante-popup {
+    background: rgba(0, 0, 0, 0.85);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup-content {
+    background: #111;
+    border: 1px solid #00ff88;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 90%;
+    max-width: 500px;
+  }
+  
+  .popup-buttons button {
+    margin: 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .popup-buttons button:first-child {
+    background: #00ff88;
+    color: black;
+  }
+  
+  .popup-buttons button:last-child {
+    background: #333;
+    color: white;
+  }
+  
+  .popup-buttons button:first-child:hover {
+    background: #00cc6a;
+  }
+  
+  .popup-buttons button:last-child:hover {
+    background: #555;
+  }
+  
+  .firma {
+    margin-top: 20px;
+    font-style: italic;
+    color: #ccc;
+  }
+  

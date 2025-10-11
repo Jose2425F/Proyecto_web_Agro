@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
 import DetalleProyecto from './components/DetalleProyecto';
+import InvertirProyecto from './components/InvertirProyecto';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
 import MisProyectos from './pages/MisProyectos';
@@ -28,6 +29,7 @@ function App() {
           <Route path="/crear-proyecto" element={<CrearProyectos />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/gestionar/:id" element={<GestionarProyecto />} />
+          <Route path="/invertir/:id" element={<InvertirProyecto />} />
         </Route>
       </Routes>
     </Router>

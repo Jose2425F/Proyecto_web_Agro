@@ -90,7 +90,12 @@ const Projects = () => {
                                 <div className="card-actions">
                                     {
                                         proyecto.estado != "En Progreso" && (
-                                            <button className="btn-accion btn-invertir">Invertir</button>
+                                            <button 
+                                            className="btn-accion btn-invertir"
+                                            onClick={() => navigate(`/invertir/${proyecto.id}`)}
+                                            >
+                                              Invertir
+                                            </button>
                                         )
                                     }
                                     <button
