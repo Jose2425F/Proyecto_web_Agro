@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "../supabaseClient"
-import { useUser } from "../hooks/useUser"
-import "./Perfil.css"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import { useUser } from "../hooks/useUser";
+import "./Perfil.css";
 
 const Perfil = () => {
-  const { userId } = useUser()
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
-  const [userData, setUserData] = useState(null)
-  const [inversiones, setInversiones] = useState([])
-  const [proyectos, setProyectos] = useState([])
-  const [inversionesRecibidas, setInversionesRecibidas] = useState([])
+  const { userId } = useUser();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const [inversiones, setInversiones] = useState([]);
+  const [proyectos, setProyectos] = useState([]);
+  const [inversionesRecibidas, setInversionesRecibidas] = useState([]);
   const [estadisticas, setEstadisticas] = useState({
     totalInvertido: 0,
     proyectosActivos: 0,
@@ -19,10 +19,10 @@ const Perfil = () => {
     totalProyectos: 0,
     montoRecaudado: 0,
     totalInversores: 0,
-  })
-  const [editMode, setEditMode] = useState(false)
-  const [photoPreview, setPhotoPreview] = useState(null)
-  const [alertInfo, setAlertInfo] = useState(null)
+  });
+  const [editMode, setEditMode] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [alertInfo, setAlertInfo] = useState(null);
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -30,31 +30,35 @@ const Perfil = () => {
     foto: null,
     oldPassword: "",
     newPassword: "",
-  })
-  const [activeTab, setActiveTab] = useState("perfil")
+  });
+  const [activeTab, setActiveTab] = useState("perfil");
 
   useEffect(() => {
     if (userId) {
-      fetchUserData()
+      fetchUserData();
     }
-  }, [userId])
+  }, [userId]);
 
   useEffect(() => {
     if (userData?.rol === "inversionista") {
-      fetchInversiones()
+      fetchInversiones();
     } else if (userData?.rol === "campesino") {
-      fetchProyectos()
-      fetchInversionesRecibidas()
+      fetchProyectos();
+      fetchInversionesRecibidas();
     }
-  }, [userData?.rol])
+  }, [userData?.rol]);
 
   const fetchUserData = async () => {
     try {
-      const { data, error } = await supabase.from("usuarios").select("*").eq("id", userId).single()
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
-      setUserData(data)
+      setUserData(data);
       setFormData({
         nombre: data.nombre || "",
         apellido: data.apellido || "",
@@ -62,13 +66,13 @@ const Perfil = () => {
         foto: null,
         oldPassword: "",
         newPassword: "",
-      })
+      });
     } catch (error) {
-      console.error("Error al cargar usuario:", error)
+      console.error("Error al cargar usuario:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchInversiones = async () => {
     try {
@@ -85,28 +89,30 @@ const Perfil = () => {
             costos,
             monto_recaudado
           )
-        `,
+        `
         )
         .eq("id_inversor", userId)
-        .order("fecha_inversion", { ascending: false })
+        .order("fecha_inversion", { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setInversiones(data || [])
+      setInversiones(data || []);
 
-      const totalInvertido = data?.reduce((sum, inv) => sum + (inv.monto_invertido || 0), 0) || 0
-      const proyectosActivos = new Set(data?.map((inv) => inv.id_proyecto)).size || 0
-      const retornoEstimado = totalInvertido * 1.15
+      const totalInvertido =
+        data?.reduce((sum, inv) => sum + (inv.monto_invertido || 0), 0) || 0;
+      const proyectosActivos =
+        new Set(data?.map((inv) => inv.id_proyecto)).size || 0;
+      const retornoEstimado = totalInvertido * 1.15;
 
       setEstadisticas({
         totalInvertido,
         proyectosActivos,
         retornoEstimado,
-      })
+      });
     } catch (error) {
-      console.error("Error al cargar inversiones:", error)
+      console.error("Error al cargar inversiones:", error);
     }
-  }
+  };
 
   const fetchProyectos = async () => {
     try {
@@ -114,25 +120,27 @@ const Perfil = () => {
         .from("proyectos")
         .select("*")
         .eq("id_usuario", userId)
-        .order("fecha_creacion", { ascending: false })
+        .order("fecha_creacion", { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setProyectos(data || [])
+      setProyectos(data || []);
 
-      const totalProyectos = data?.length || 0
-      const montoRecaudado = data?.reduce((sum, proj) => sum + (proj.monto_recaudado || 0), 0) || 0
-      const proyectosActivos = data?.filter((p) => p.estado === "Activo").length || 0
+      const totalProyectos = data?.length || 0;
+      const montoRecaudado =
+        data?.reduce((sum, proj) => sum + (proj.monto_recaudado || 0), 0) || 0;
+      const proyectosActivos =
+        data?.filter((p) => p.estado === "Activo").length || 0;
 
       setEstadisticas({
         totalProyectos,
         montoRecaudado,
         proyectosActivos,
-      })
+      });
     } catch (error) {
-      console.error("Error al cargar proyectos:", error)
+      console.error("Error al cargar proyectos:", error);
     }
-  }
+  };
 
   const fetchInversionesRecibidas = async () => {
     try {
@@ -140,15 +148,15 @@ const Perfil = () => {
       const { data: proyectosData, error: proyectosError } = await supabase
         .from("proyectos")
         .select("id")
-        .eq("id_usuario", userId)
+        .eq("id_usuario", userId);
 
-      if (proyectosError) throw proyectosError
+      if (proyectosError) throw proyectosError;
 
-      const proyectoIds = proyectosData?.map((p) => p.id) || []
+      const proyectoIds = proyectosData?.map((p) => p.id) || [];
 
       if (proyectoIds.length === 0) {
-        setInversionesRecibidas([])
-        return
+        setInversionesRecibidas([]);
+        return;
       }
 
       // Obtener inversiones de esos proyectos
@@ -168,29 +176,30 @@ const Perfil = () => {
             apellido,
             foto_perfil
           )
-        `,
+        `
         )
         .in("id_proyecto", proyectoIds)
-        .order("fecha_inversion", { ascending: false })
+        .order("fecha_inversion", { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setInversionesRecibidas(data || [])
+      setInversionesRecibidas(data || []);
 
       // Actualizar estadística de inversores únicos
-      const totalInversores = new Set(data?.map((inv) => inv.id_inversor)).size || 0
+      const totalInversores =
+        new Set(data?.map((inv) => inv.id_inversor)).size || 0;
       setEstadisticas((prev) => ({
         ...prev,
         totalInversores,
-      }))
+      }));
     } catch (error) {
-      console.error("Error al cargar inversiones recibidas:", error)
+      console.error("Error al cargar inversiones recibidas:", error);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     // Validar nombre y apellido
     if (!formData.nombre.trim() || !formData.apellido.trim()) {
@@ -198,53 +207,62 @@ const Perfil = () => {
         severity: "warning",
         title: "Advertencia",
         message: "Nombre o apellido no pueden estar vacíos.",
-      })
-      setTimeout(() => setAlertInfo(null), 3000)
-      setLoading(false)
-      return
+      });
+      setTimeout(() => setAlertInfo(null), 3000);
+      setLoading(false);
+      return;
     }
 
     try {
-      let photoUrl = userData.foto_perfil
+      let photoUrl = userData.foto_perfil;
 
       // Si hay nueva foto
       if (formData.foto) {
         if (photoUrl) {
-          const previousFileMatch = photoUrl.match(/\/public\/avatars\/(.+)$/)
-          const previousFile = previousFileMatch ? previousFileMatch[1] : null
+          const previousFileMatch = photoUrl.match(/\/public\/avatars\/(.+)$/);
+          const previousFile = previousFileMatch ? previousFileMatch[1] : null;
 
           if (previousFile) {
-            const { error: removeError } = await supabase.storage.from("avatars").remove([previousFile])
+            const { error: removeError } = await supabase.storage
+              .from("avatars")
+              .remove([previousFile]);
 
             if (removeError) {
-              console.warn("No se pudo eliminar la foto anterior:", removeError.message)
+              console.warn(
+                "No se pudo eliminar la foto anterior:",
+                removeError.message
+              );
             }
           }
         }
 
         // Subir nueva foto
-        const fileExt = formData.foto.name.split(".").pop()
-        const fileName = `${Date.now()}.${fileExt}`
-        const filePath = fileName
+        const fileExt = formData.foto.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = fileName;
 
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, formData.foto)
-        if (uploadError) throw uploadError
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(filePath, formData.foto);
+        if (uploadError) throw uploadError;
 
-        const { data: publicData } = await supabase.storage.from("avatars").getPublicUrl(filePath)
-        photoUrl = publicData.publicUrl
+        const { data: publicData } = await supabase.storage
+          .from("avatars")
+          .getPublicUrl(filePath);
+        photoUrl = publicData.publicUrl;
 
         const { error: updateError } = await supabase
           .from("usuarios")
           .update({ foto_perfil: photoUrl })
-          .eq("id", userId)
-        if (updateError) throw updateError
+          .eq("id", userId);
+        if (updateError) throw updateError;
       }
 
       // Actualizar nombre y apellido
       const updateData = {
         nombre: formData.nombre,
         apellido: formData.apellido,
-      }
+      };
 
       // Cambiar contraseña si se ingresa
       if (formData.oldPassword && formData.newPassword) {
@@ -253,70 +271,73 @@ const Perfil = () => {
             severity: "error",
             title: "Error",
             message: "Contraseña antigua incorrecta.",
-          })
-          setTimeout(() => setAlertInfo(null), 3000)
-          setLoading(false)
-          return
+          });
+          setTimeout(() => setAlertInfo(null), 3000);
+          setLoading(false);
+          return;
         }
-        updateData.password = formData.newPassword
+        updateData.password = formData.newPassword;
       }
 
       // Actualizar DB
-      const { error: finalUpdateError } = await supabase.from("usuarios").update(updateData).eq("id", userId)
-      if (finalUpdateError) throw finalUpdateError
+      const { error: finalUpdateError } = await supabase
+        .from("usuarios")
+        .update(updateData)
+        .eq("id", userId);
+      if (finalUpdateError) throw finalUpdateError;
 
       // Actualizar estado local
-      setUserData({ ...userData, ...updateData, foto_perfil: photoUrl })
+      setUserData({ ...userData, ...updateData, foto_perfil: photoUrl });
       setFormData({
         ...formData,
         foto: null,
         oldPassword: "",
         newPassword: "",
-      })
-      setPhotoPreview(null)
+      });
+      setPhotoPreview(null);
 
       setAlertInfo({
         severity: "success",
         title: "¡Éxito!",
         message: "Perfil actualizado correctamente.",
-      })
+      });
       setTimeout(() => {
-        setAlertInfo(null)
-        setEditMode(false)
-      }, 3000)
+        setAlertInfo(null);
+        setEditMode(false);
+      }, 3000);
     } catch (error) {
-      console.error("Error al actualizar perfil:", error.message)
+      console.error("Error al actualizar perfil:", error.message);
       setAlertInfo({
         severity: "error",
         title: "Error",
         message: "Ocurrió un error al actualizar el perfil.",
-      })
-      setTimeout(() => setAlertInfo(null), 3000)
+      });
+      setTimeout(() => setAlertInfo(null), 3000);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target
+    const { name, value, files } = e.target;
 
     if (name === "foto" && files && files[0]) {
-      const file = files[0]
-      setFormData({ ...formData, foto: file })
+      const file = files[0];
+      setFormData({ ...formData, foto: file });
 
       // Crear preview de la imagen
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result)
-      }
-      reader.readAsDataURL(file)
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     } else {
       setFormData({
         ...formData,
         [name]: value,
-      })
+      });
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -324,7 +345,7 @@ const Perfil = () => {
         <div className="spinner"></div>
         <p>Cargando perfil...</p>
       </div>
-    )
+    );
   }
 
   const renderEstadisticasQuick = () => {
@@ -334,26 +355,32 @@ const Perfil = () => {
           <div className="stat-quick-card">
             <div className="stat-icon">💰</div>
             <div className="stat-content">
-              <span className="stat-value">${estadisticas.totalInvertido.toLocaleString("es-CO")}</span>
+              <span className="stat-value">
+                ${estadisticas.totalInvertido.toLocaleString("es-CO")}
+              </span>
               <span className="stat-label">Total Invertido</span>
             </div>
           </div>
           <div className="stat-quick-card">
             <div className="stat-icon">📊</div>
             <div className="stat-content">
-              <span className="stat-value">{estadisticas.proyectosActivos}</span>
+              <span className="stat-value">
+                {estadisticas.proyectosActivos}
+              </span>
               <span className="stat-label">Proyectos Activos</span>
             </div>
           </div>
           <div className="stat-quick-card">
             <div className="stat-icon">📈</div>
             <div className="stat-content">
-              <span className="stat-value">${estadisticas.retornoEstimado.toLocaleString("es-CO")}</span>
+              <span className="stat-value">
+                ${estadisticas.retornoEstimado.toLocaleString("es-CO")}
+              </span>
               <span className="stat-label">Retorno Estimado</span>
             </div>
           </div>
         </>
-      )
+      );
     } else if (userData?.rol === "campesino") {
       return (
         <>
@@ -367,7 +394,9 @@ const Perfil = () => {
           <div className="stat-quick-card">
             <div className="stat-icon">💰</div>
             <div className="stat-content">
-              <span className="stat-value">${estadisticas.montoRecaudado.toLocaleString("es-CO")}</span>
+              <span className="stat-value">
+                ${estadisticas.montoRecaudado.toLocaleString("es-CO")}
+              </span>
               <span className="stat-label">Monto Recaudado</span>
             </div>
           </div>
@@ -379,9 +408,9 @@ const Perfil = () => {
             </div>
           </div>
         </>
-      )
+      );
     }
-  }
+  };
 
   return (
     <div className="perfil-container">
@@ -407,7 +436,14 @@ const Perfil = () => {
         <div className="header-background"></div>
         <div className="header-content">
           <button onClick={() => navigate(-1)} className="btn-back-perfil">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             Volver
@@ -416,12 +452,22 @@ const Perfil = () => {
           <div className="perfil-info">
             <div className="avatar-container">
               <img
-                src={userData?.foto_perfil || "/placeholder.svg?height=120&width=120&query=user avatar"}
+                src={
+                  userData?.foto_perfil ||
+                  "/placeholder.svg?height=120&width=120&query=user avatar"
+                }
                 alt={`${userData?.nombre} ${userData?.apellido}`}
                 className="avatar-image"
               />
               <div className="avatar-badge">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
@@ -434,9 +480,19 @@ const Perfil = () => {
               </h1>
               <p className="perfil-email">{userData?.correo}</p>
               <div className="perfil-badges">
-                <span className="badge-rol">{userData?.rol || "Usuario"}</span>
-                <span className={`badge-estado ${userData?.cuenta_estado?.toLowerCase()}`}>
-                  {userData?.cuenta_estado || "Activa"}
+                <span className="badge-rol">
+                  {userData?.rol
+                    ? userData.rol.charAt(0).toUpperCase() +
+                      userData.rol.slice(1).toLowerCase()
+                    : "Usuario"}
+                </span>
+                <span
+                  className={`badge-estado ${userData?.cuenta_estado?.toLowerCase()}`}
+                >
+                  {userData?.cuenta_estado
+                    ? userData.cuenta_estado.charAt(0).toUpperCase() +
+                      userData.cuenta_estado.slice(1).toLowerCase()
+                    : "Activa"}
                 </span>
               </div>
             </div>
@@ -447,8 +503,18 @@ const Perfil = () => {
       </div>
 
       <div className="perfil-tabs">
-        <button className={`tab ${activeTab === "perfil" ? "active" : ""}`} onClick={() => setActiveTab("perfil")}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button
+          className={`tab ${activeTab === "perfil" ? "active" : ""}`}
+          onClick={() => setActiveTab("perfil")}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
@@ -461,7 +527,14 @@ const Perfil = () => {
               className={`tab ${activeTab === "inversiones" ? "active" : ""}`}
               onClick={() => setActiveTab("inversiones")}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <line x1="12" y1="1" x2="12" y2="23" />
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
               </svg>
@@ -471,7 +544,14 @@ const Perfil = () => {
               className={`tab ${activeTab === "actividad" ? "active" : ""}`}
               onClick={() => setActiveTab("actividad")}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
               Actividad
@@ -485,17 +565,33 @@ const Perfil = () => {
               className={`tab ${activeTab === "proyectos" ? "active" : ""}`}
               onClick={() => setActiveTab("proyectos")}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
               Mis Proyectos
             </button>
             <button
-              className={`tab ${activeTab === "inversiones-recibidas" ? "active" : ""}`}
+              className={`tab ${
+                activeTab === "inversiones-recibidas" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("inversiones-recibidas")}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="8.5" cy="7" r="4" />
                 <line x1="20" y1="8" x2="20" y2="14" />
@@ -515,8 +611,18 @@ const Perfil = () => {
               <div className="perfil-card">
                 <div className="card-header">
                   <h2>Información Personal</h2>
-                  <button className="btn-edit" onClick={() => setEditMode(!editMode)}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <button
+                    className="btn-edit"
+                    onClick={() => setEditMode(!editMode)}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
@@ -530,16 +636,16 @@ const Perfil = () => {
                     <div className="photo-upload-section">
                       <div className="photo-preview">
                         <img
-                          src={
-                            photoPreview ||
-                            userData?.foto_perfil 
-                          }
+                          src={photoPreview || userData?.foto_perfil}
                           alt="Preview"
                           className="photo-preview-img"
                         />
                       </div>
                       <div className="photo-upload-controls">
-                        <label htmlFor="foto-input" className="btn-upload-photo">
+                        <label
+                          htmlFor="foto-input"
+                          className="btn-upload-photo"
+                        >
                           <svg
                             width="20"
                             height="20"
@@ -600,7 +706,9 @@ const Perfil = () => {
                         placeholder="tu@email.com"
                         disabled
                       />
-                      <span className="input-hint">El correo no se puede modificar</span>
+                      <span className="input-hint">
+                        El correo no se puede modificar
+                      </span>
                     </div>
 
                     <div className="form-divider">
@@ -629,7 +737,11 @@ const Perfil = () => {
                       />
                     </div>
 
-                    <button type="submit" className="btn-save" disabled={loading}>
+                    <button
+                      type="submit"
+                      className="btn-save"
+                      disabled={loading}
+                    >
                       {loading ? (
                         <>
                           <div className="btn-spinner"></div>
@@ -654,22 +766,29 @@ const Perfil = () => {
                     </div>
                     <div className="info-row">
                       <span className="info-label">Rol</span>
-                      <span className="info-value">{userData?.rol || "Usuario"}</span>
+                      <span className="info-value">
+                        {userData?.rol || "Usuario"}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Estado de Cuenta</span>
-                      <span className={`badge-estado ${userData?.cuenta_estado?.toLowerCase()}`}>
+                      <span
+                        className={`badge-estado ${userData?.cuenta_estado?.toLowerCase()}`}
+                      >
                         {userData?.cuenta_estado || "Activa"}
                       </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Miembro desde</span>
                       <span className="info-value">
-                        {new Date(userData?.created_at).toLocaleDateString("es-CO", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {new Date(userData?.created_at).toLocaleDateString(
+                          "es-CO",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
                       </span>
                     </div>
                   </div>
@@ -679,7 +798,9 @@ const Perfil = () => {
               <div className="perfil-card">
                 <div className="card-header">
                   <h2>
-                    {userData?.rol === "inversionista" ? "Estadísticas de Inversión" : "Estadísticas de Proyectos"}
+                    {userData?.rol === "inversionista"
+                      ? "Estadísticas de Inversión"
+                      : "Estadísticas de Proyectos"}
                   </h2>
                 </div>
                 <div className="stats-detailed">
@@ -687,11 +808,16 @@ const Perfil = () => {
                     <>
                       <div className="stat-detailed-card">
                         <div className="stat-icon-large">💰</div>
-                        <h3>${estadisticas.totalInvertido.toLocaleString("es-CO")}</h3>
+                        <h3>
+                          ${estadisticas.totalInvertido.toLocaleString("es-CO")}
+                        </h3>
                         <p>Total Invertido</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat" style={{ width: "75%" }}></div>
+                            <div
+                              className="progress-fill-stat"
+                              style={{ width: "75%" }}
+                            ></div>
                           </div>
                           <span>75% del objetivo anual</span>
                         </div>
@@ -702,18 +828,27 @@ const Perfil = () => {
                         <p>Proyectos Activos</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat success" style={{ width: "60%" }}></div>
+                            <div
+                              className="progress-fill-stat success"
+                              style={{ width: "60%" }}
+                            ></div>
                           </div>
                           <span>Diversificación óptima</span>
                         </div>
                       </div>
                       <div className="stat-detailed-card">
                         <div className="stat-icon-large">📈</div>
-                        <h3>${estadisticas.retornoEstimado.toLocaleString("es-CO")}</h3>
+                        <h3>
+                          $
+                          {estadisticas.retornoEstimado.toLocaleString("es-CO")}
+                        </h3>
                         <p>Retorno Estimado</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat warning" style={{ width: "85%" }}></div>
+                            <div
+                              className="progress-fill-stat warning"
+                              style={{ width: "85%" }}
+                            ></div>
                           </div>
                           <span>+15% de rendimiento</span>
                         </div>
@@ -727,18 +862,26 @@ const Perfil = () => {
                         <p>Total de Proyectos</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat" style={{ width: "100%" }}></div>
+                            <div
+                              className="progress-fill-stat"
+                              style={{ width: "100%" }}
+                            ></div>
                           </div>
                           <span>Proyectos creados</span>
                         </div>
                       </div>
                       <div className="stat-detailed-card">
                         <div className="stat-icon-large">💰</div>
-                        <h3>${estadisticas.montoRecaudado.toLocaleString("es-CO")}</h3>
+                        <h3>
+                          ${estadisticas.montoRecaudado.toLocaleString("es-CO")}
+                        </h3>
                         <p>Monto Recaudado</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat success" style={{ width: "70%" }}></div>
+                            <div
+                              className="progress-fill-stat success"
+                              style={{ width: "70%" }}
+                            ></div>
                           </div>
                           <span>Capital obtenido</span>
                         </div>
@@ -749,7 +892,10 @@ const Perfil = () => {
                         <p>Inversores</p>
                         <div className="stat-progress">
                           <div className="progress-bar-stat">
-                            <div className="progress-fill-stat warning" style={{ width: "80%" }}></div>
+                            <div
+                              className="progress-fill-stat warning"
+                              style={{ width: "80%" }}
+                            ></div>
                           </div>
                           <span>Personas invirtiendo</span>
                         </div>
@@ -770,12 +916,14 @@ const Perfil = () => {
                   <div key={inversion.id} className="inversion-card">
                     <div className="inversion-image">
                       <img
-                        src={
-                          inversion.proyectos?.imagen_url
-                        }
+                        src={inversion.proyectos?.imagen_url}
                         alt={inversion.proyectos?.nombre}
                       />
-                      <span className={`estado-badge ${inversion.proyectos?.estado?.toLowerCase().replace(/ /g, "-")}`}>
+                      <span
+                        className={`estado-badge ${inversion.proyectos?.estado
+                          ?.toLowerCase()
+                          .replace(/ /g, "-")}`}
+                      >
                         {inversion.proyectos?.estado}
                       </span>
                     </div>
@@ -784,22 +932,31 @@ const Perfil = () => {
                       <div className="inversion-details">
                         <div className="detail-item">
                           <span className="detail-label">Tipo</span>
-                          <span className="detail-value">{inversion.tipo_inversion}</span>
+                          <span className="detail-value">
+                            {inversion.tipo_inversion}
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Monto</span>
-                          <span className="detail-value">${inversion.monto_invertido?.toLocaleString("es-CO")}</span>
+                          <span className="detail-value">
+                            $
+                            {inversion.monto_invertido?.toLocaleString("es-CO")}
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Fecha</span>
                           <span className="detail-value">
-                            {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO")}
+                            {new Date(
+                              inversion.fecha_inversion
+                            ).toLocaleDateString("es-CO")}
                           </span>
                         </div>
                       </div>
                       <button
                         className="btn-ver-proyecto"
-                        onClick={() => navigate(`/projects/${inversion.id_proyecto}`)}
+                        onClick={() =>
+                          navigate(`/projects/${inversion.id_proyecto}`)
+                        }
                       >
                         Ver Proyecto
                       </button>
@@ -811,7 +968,10 @@ const Perfil = () => {
                   <div className="empty-icon">📊</div>
                   <h3>No tienes inversiones aún</h3>
                   <p>Explora proyectos disponibles y comienza a invertir</p>
-                  <button className="btn-explorar" onClick={() => navigate("/projects")}>
+                  <button
+                    className="btn-explorar"
+                    onClick={() => navigate("/projects")}
+                  >
                     Explorar Proyectos
                   </button>
                 </div>
@@ -828,10 +988,17 @@ const Perfil = () => {
                   <div key={proyecto.id} className="inversion-card">
                     <div className="inversion-image">
                       <img
-                        src={proyecto.imagen_url || "/placeholder.svg?height=200&width=300&query=agricultural project"}
+                        src={
+                          proyecto.imagen_url ||
+                          "/placeholder.svg?height=200&width=300&query=agricultural project"
+                        }
                         alt={proyecto.nombre}
                       />
-                      <span className={`estado-badge ${proyecto.estado?.toLowerCase().replace(/ /g, "-")}`}>
+                      <span
+                        className={`estado-badge ${proyecto.estado
+                          ?.toLowerCase()
+                          .replace(/ /g, "-")}`}
+                      >
                         {proyecto.estado}
                       </span>
                     </div>
@@ -840,20 +1007,30 @@ const Perfil = () => {
                       <div className="inversion-details">
                         <div className="detail-item">
                           <span className="detail-label">Capital</span>
-                          <span className="detail-value">${proyecto.costos?.toLocaleString("es-CO")}</span>
+                          <span className="detail-value">
+                            ${proyecto.costos?.toLocaleString("es-CO")}
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Recaudado</span>
-                          <span className="detail-value">${proyecto.monto_recaudado?.toLocaleString("es-CO")}</span>
+                          <span className="detail-value">
+                            ${proyecto.monto_recaudado?.toLocaleString("es-CO")}
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Progreso</span>
                           <span className="detail-value">
-                            {Math.round((proyecto.monto_recaudado / proyecto.costos) * 100)}%
+                            {Math.round(
+                              (proyecto.monto_recaudado / proyecto.costos) * 100
+                            )}
+                            %
                           </span>
                         </div>
                       </div>
-                      <button className="btn-ver-proyecto" onClick={() => navigate(`/projects/${proyecto.id}`)}>
+                      <button
+                        className="btn-ver-proyecto"
+                        onClick={() => navigate(`/projects/${proyecto.id}`)}
+                      >
                         Ver Detalles
                       </button>
                     </div>
@@ -863,8 +1040,13 @@ const Perfil = () => {
                 <div className="empty-state">
                   <div className="empty-icon">🌾</div>
                   <h3>No tienes proyectos aún</h3>
-                  <p>Crea tu primer proyecto y comienza a recibir inversiones</p>
-                  <button className="btn-explorar" onClick={() => navigate("/crear-proyecto")}>
+                  <p>
+                    Crea tu primer proyecto y comienza a recibir inversiones
+                  </p>
+                  <button
+                    className="btn-explorar"
+                    onClick={() => navigate("/crear-proyecto")}
+                  >
                     Crear Proyecto
                   </button>
                 </div>
@@ -873,62 +1055,72 @@ const Perfil = () => {
           </div>
         )}
 
-        {activeTab === "inversiones-recibidas" && userData?.rol === "campesino" && (
-          <div className="tab-content">
-            <div className="inversiones-grid">
-              {inversionesRecibidas.length > 0 ? (
-                inversionesRecibidas.map((inversion) => (
-                  <div key={inversion.id} className="inversion-card">
-                    <div className="inversion-image">
-                      <img
-                        src={
-                          inversion.proyectos?.imagen_url
-                        }
-                        alt={inversion.proyectos?.nombre}
-                      />
-                    </div>
-                    <div className="inversion-content">
-                      <h3>{inversion.proyectos?.nombre}</h3>
-                      <div className="inversor-info">
+        {activeTab === "inversiones-recibidas" &&
+          userData?.rol === "campesino" && (
+            <div className="tab-content">
+              <div className="inversiones-grid">
+                {inversionesRecibidas.length > 0 ? (
+                  inversionesRecibidas.map((inversion) => (
+                    <div key={inversion.id} className="inversion-card">
+                      <div className="inversion-image">
                         <img
-                          src={
-                            inversion.usuarios?.foto_perfil || "/placeholder.svg?height=40&width=40&query=user avatar"
-                          }
-                          alt={`${inversion.usuarios?.nombre} ${inversion.usuarios?.apellido}`}
-                          className="inversor-avatar"
+                          src={inversion.proyectos?.imagen_url}
+                          alt={inversion.proyectos?.nombre}
                         />
-                        <div>
-                          <p className="inversor-nombre">
-                            {inversion.usuarios?.nombre} {inversion.usuarios?.apellido}
-                          </p>
-                          <p className="inversor-tipo">{inversion.tipo_inversion}</p>
-                        </div>
                       </div>
-                      <div className="inversion-details">
-                        <div className="detail-item">
-                          <span className="detail-label">Monto</span>
-                          <span className="detail-value">${inversion.monto_invertido?.toLocaleString("es-CO")}</span>
+                      <div className="inversion-content">
+                        <h3>{inversion.proyectos?.nombre}</h3>
+                        <div className="inversor-info">
+                          <img
+                            src={
+                              inversion.usuarios?.foto_perfil ||
+                              "/placeholder.svg?height=40&width=40&query=user avatar"
+                            }
+                            alt={`${inversion.usuarios?.nombre} ${inversion.usuarios?.apellido}`}
+                            className="inversor-avatar"
+                          />
+                          <div>
+                            <p className="inversor-nombre">
+                              {inversion.usuarios?.nombre}{" "}
+                              {inversion.usuarios?.apellido}
+                            </p>
+                            <p className="inversor-tipo">
+                              {inversion.tipo_inversion}
+                            </p>
+                          </div>
                         </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Fecha</span>
-                          <span className="detail-value">
-                            {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO")}
-                          </span>
+                        <div className="inversion-details">
+                          <div className="detail-item">
+                            <span className="detail-label">Monto</span>
+                            <span className="detail-value">
+                              $
+                              {inversion.monto_invertido?.toLocaleString(
+                                "es-CO"
+                              )}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="detail-label">Fecha</span>
+                            <span className="detail-value">
+                              {new Date(
+                                inversion.fecha_inversion
+                              ).toLocaleDateString("es-CO")}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <div className="empty-icon">👥</div>
+                    <h3>No has recibido inversiones aún</h3>
+                    <p>Comparte tus proyectos para atraer inversores</p>
                   </div>
-                ))
-              ) : (
-                <div className="empty-state">
-                  <div className="empty-icon">👥</div>
-                  <h3>No has recibido inversiones aún</h3>
-                  <p>Comparte tus proyectos para atraer inversores</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {activeTab === "actividad" && userData?.rol === "inversionista" && (
           <div className="tab-content">
@@ -941,7 +1133,9 @@ const Perfil = () => {
                       <div className="timeline-header">
                         <h4>Inversión realizada</h4>
                         <span className="timeline-date">
-                          {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO", {
+                          {new Date(
+                            inversion.fecha_inversion
+                          ).toLocaleDateString("es-CO", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
@@ -949,8 +1143,13 @@ const Perfil = () => {
                         </span>
                       </div>
                       <p>
-                        Invertiste <strong>${inversion.monto_invertido?.toLocaleString("es-CO")}</strong> en el proyecto{" "}
-                        <strong>{inversion.proyectos?.nombre}</strong> como <strong>{inversion.tipo_inversion}</strong>
+                        Invertiste{" "}
+                        <strong>
+                          ${inversion.monto_invertido?.toLocaleString("es-CO")}
+                        </strong>{" "}
+                        en el proyecto{" "}
+                        <strong>{inversion.proyectos?.nombre}</strong> como{" "}
+                        <strong>{inversion.tipo_inversion}</strong>
                       </p>
                     </div>
                   </div>
@@ -967,7 +1166,7 @@ const Perfil = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Perfil
+export default Perfil;

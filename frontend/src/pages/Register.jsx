@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import DescriptionAlerts from "../components/DescriptionAlerts";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { supabase } from "../supabaseClient";
+import AlertModal from "../components/AlertModal";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,29 +11,28 @@ const Register = () => {
     CorreoElectronico: "",
     ContrasenaUser: "",
     confirmPassword: "",
-    Tipo_usuario: "campesino", // valor por defecto
+    Tipo_usuario: "campesino",
   });
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [alertInfo, setAlertInfo] = useState({
-    severity: "",
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    type: "info",
     title: "",
     message: "",
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let timer;
-    if (alertInfo.message) {
-      timer = setTimeout(() => {
-        setAlertInfo({ severity: "", title: "", message: "" });
-      }, 3000);
+  const closeModal = () => {
+    if (alertModal.type === "success") {
+      setAlertModal((prev) => ({ ...prev, isOpen: false }));
+      navigate("/login");
+    } else {
+      setAlertModal((prev) => ({ ...prev, isOpen: false }));
     }
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [alertInfo]);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.Nombre) newErrors.Nombre = "El nombre es requerido";
@@ -77,13 +76,14 @@ const Register = () => {
     document.getElementById("photo-upload").value = "";
   };
 
-  // 🧠 Registro del usuario en la tabla `usuarios`
+  // 🧠 Registro del usuario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setAlertInfo({
-        severity: "error",
+      setAlertModal({
+        isOpen: true,
+        type: "error",
         title: "Error de Validación",
         message: "Por favor, corrige los errores en el formulario.",
       });
@@ -91,7 +91,6 @@ const Register = () => {
     }
 
     try {
-      // 1️⃣ Insertar usuario sin foto
       const { data: userData, error: insertError } = await supabase
         .from("usuarios")
         .insert([
@@ -108,14 +107,14 @@ const Register = () => {
 
       if (insertError) {
         if (insertError.message.includes("usuarios_correo_key")) {
-          setAlertInfo({
-            severity: "error",
+          setAlertModal({
+            isOpen: true,
+            type: "error",
             title: "Error",
             message: "Ya existe un usuario con ese correo.",
           });
           return;
         }
-
         throw insertError;
       }
 
@@ -146,17 +145,18 @@ const Register = () => {
 
         if (updateError) throw updateError;
       }
-      setAlertInfo({
-        severity: "success",
+
+      setAlertModal({
+        isOpen: true,
+        type: "success",
         title: "Registro Exitoso",
         message: "Tu cuenta ha sido creada correctamente.",
       });
-      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       console.error("Error al registrar:", error);
-
-      setAlertInfo({
-        severity: "error",
+      setAlertModal({
+        isOpen: true,
+        type: "error",
         title: "Error",
         message: error.message.includes("usuarios_correo_key")
           ? "Ya existe un usuario con ese correo."
@@ -168,11 +168,11 @@ const Register = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
     console.log("Google Credential:", credential);
-
-    setAlertInfo({
-      severity: "info",
+    setAlertModal({
+      isOpen: true,
+      type: "info",
       title: "Atención",
-      message: "Funcionalidad en Desarrollo",
+      message: "Funcionalidad en desarrollo.",
     });
   };
 
@@ -284,6 +284,7 @@ const Register = () => {
                 </div>
               )}
             </div>
+
             <div style={{ flex: "1" }}>
               <label
                 htmlFor="photo-upload"
@@ -298,6 +299,7 @@ const Register = () => {
               >
                 {photo ? "Cambiar foto" : "Agregar foto"}
               </label>
+
               <input
                 id="photo-upload"
                 type="file"
@@ -306,6 +308,7 @@ const Register = () => {
                 accept="image/*"
                 style={{ display: "none" }}
               />
+
               {photo && (
                 <button
                   type="button"
@@ -318,6 +321,7 @@ const Register = () => {
                     color: "#333",
                     cursor: "pointer",
                     backgroundColor: "#f9f9f9",
+                    marginLeft: "10px",
                   }}
                 >
                   Borrar
@@ -346,34 +350,40 @@ const Register = () => {
         <div style={{ display: "flex", justifyContent: "center" }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
-            onError={() => {
-              setAlertInfo({
-                severity: "error",
+            onError={() =>
+              setAlertModal({
+                isOpen: true,
+                type: "error",
                 title: "Error",
                 message:
                   "El registro con Google falló. Por favor, inténtalo de nuevo.",
-              });
-            }}
+              })
+            }
             theme="outline"
             size="large"
             width="436"
           />
         </div>
+
         <div className="color_p">
-        <p>
-          ¿Ya tienes una cuenta? <Link to="/login" className="custom-link">Inicia Sesión</Link>
-        </p>
+          <p>
+            ¿Ya tienes una cuenta?{" "}
+            <Link to="/login" className="custom-link">
+              Inicia Sesión
+            </Link>
+          </p>
         </div>
       </form>
-      {alertInfo.message && (
-        <div style={{ position: "fixed", top: 20, right: 20, zIndex: 1000 }}>
-          <DescriptionAlerts
-            severity={alertInfo.severity}
-            title={alertInfo.title}
-            message={alertInfo.message}
-          />
-        </div>
-      )}
+
+      {/* 🔹 Modal de alerta */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        type={alertModal.type}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={closeModal}
+        confirmText="Aceptar"
+      />
     </div>
   );
 };

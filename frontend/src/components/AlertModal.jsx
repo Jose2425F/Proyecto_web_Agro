@@ -1,4 +1,4 @@
-"use client"
+import { useEffect } from "react"
 import "./AlertModal.css"
 
 const AlertModal = ({
@@ -13,6 +13,16 @@ const AlertModal = ({
   cancelText = "Cancelar",
   showCancel = false,
 }) => {
+  // 🔒 Evitar que el fondo se mueva al abrir la modal
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open")
+    } else {
+      document.body.classList.remove("modal-open")
+    }
+    return () => document.body.classList.remove("modal-open")
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const getIcon = () => {
@@ -77,7 +87,11 @@ const AlertModal = ({
 
   return (
     <div className="alert-modal-overlay" onClick={showCancel ? onCancel : null}>
-      <div className="alert-modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="alert-modal-content"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "zoomIn 0.25s ease-out" }}
+      >
         <div className="alert-modal-header">
           {getIcon()}
           <h2 className="alert-modal-title">{title}</h2>
@@ -85,7 +99,6 @@ const AlertModal = ({
 
         <div className="alert-modal-body">
           <p className="alert-modal-message">{message}</p>
-
           {details && <div className="alert-modal-details">{details}</div>}
         </div>
 

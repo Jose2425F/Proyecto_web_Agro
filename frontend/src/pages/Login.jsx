@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import DescriptionAlerts from "../components/DescriptionAlerts";
+import AlertModal from "../components/AlertModal";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUser } from "../hooks/useUser.js";
 
@@ -11,25 +11,26 @@ const Login = () => {
     CorreoElectronico: "",
     ContrasenaUser: "",
   });
-  const [alertInfo, setAlertInfo] = useState({
-    severity: "",
+
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    type: "info",
     title: "",
     message: "",
   });
+
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let timer;
-    if (alertInfo.message) {
-      timer = setTimeout(() => {
-        setAlertInfo({ severity: "", title: "", message: "" });
-      }, 3000);
+  // 🔹 Cierra la modal (y si es "Bienvenido", navega al home)
+  const closeModal = () => {
+    if (alertModal.type === "success") {
+      setAlertModal((prev) => ({ ...prev, isOpen: false }));
+      navigate("/home");
+    } else {
+      setAlertModal((prev) => ({ ...prev, isOpen: false }));
     }
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [alertInfo]);
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -50,8 +51,9 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setAlertInfo({
-        severity: "error",
+      setAlertModal({
+        isOpen: true,
+        type: "error",
         title: "Error de Validación",
         message: "Por favor, completa los campos requeridos.",
       });
@@ -61,7 +63,7 @@ const Login = () => {
     try {
       const { data: user, error } = await supabase
         .from("usuarios")
-        .select("id, nombre, cuenta_estado")
+        .select("id, nombre, apellido, cuenta_estado")
         .eq("correo", formData.CorreoElectronico)
         .eq("password", formData.ContrasenaUser)
         .maybeSingle();
@@ -69,8 +71,9 @@ const Login = () => {
       if (error) throw error;
 
       if (!user) {
-        setAlertInfo({
-          severity: "warning",
+        setAlertModal({
+          isOpen: true,
+          type: "warning",
           title: "Advertencia",
           message: "Correo o contraseña incorrectos.",
         });
@@ -78,29 +81,30 @@ const Login = () => {
       }
 
       if (user.cuenta_estado !== "activa") {
-        setAlertInfo({
-          severity: "error",
+        setAlertModal({
+          isOpen: true,
+          type: "error",
           title: "Acceso Denegado",
           message: "Tu cuenta no está activa. Contacta con soporte.",
         });
         return;
       }
 
+      // 🔹 Guardar sesión
       setUserId(user.id);
       localStorage.setItem("userId", user.id);
 
-      setAlertInfo({
-        severity: "success",
-        title: "Bienvenido",
-        message: `Hola ${user.nombre}, has iniciado sesión correctamente.`,
+      // 🔹 Mostrar modal de bienvenida
+      setAlertModal({
+        isOpen: true,
+        type: "success",
+        title: `Bienvenido ${user.nombre} ${user.apellido}!👋`,
+        message: `Has iniciado sesión correctamente.`,
       });
-
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
     } catch (error) {
-      setAlertInfo({
-        severity: "error",
+      setAlertModal({
+        isOpen: true,
+        type: "error",
         title: "Error",
         message: `Error al iniciar sesión: ${error.message}`,
       });
@@ -111,22 +115,20 @@ const Login = () => {
     const { credential } = credentialResponse;
     console.log("Google Credential:", credential);
 
-    setAlertInfo({
-      severity: "info",
+    setAlertModal({
+      isOpen: true,
+      type: "info",
       title: "Atención",
-      message: "Funcionalidad en Desarrollo",
+      message: "Funcionalidad en desarrollo.",
     });
-
-    // setTimeout(() => {
-    //   navigate("/home");
-    // }, 1000);
   };
 
   return (
     <div className="form-container_impuest">
       <form onSubmit={handleSubmit}>
-        <div >
+        <div>
           <h1>Iniciar Sesión</h1>
+
           <label>Correo Electrónico</label>
           <input
             type="email"
@@ -138,6 +140,7 @@ const Login = () => {
             <p className="form-error">{errors.CorreoElectronico}</p>
           )}
         </div>
+
         <div>
           <label>Contraseña</label>
           <input
@@ -150,8 +153,10 @@ const Login = () => {
             <p className="form-error">{errors.ContrasenaUser}</p>
           )}
         </div>
+
         <div className="color_p">
           <button type="submit">Iniciar Sesión</button>
+
           <p>
             ¿No tienes una cuenta?{" "}
             <Link to="/register" className="custom-link">
@@ -164,14 +169,15 @@ const Login = () => {
           <div style={{ display: "flex", justifyContent: "center" }}>
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => {
-                setAlertInfo({
-                  severity: "error",
+              onError={() =>
+                setAlertModal({
+                  isOpen: true,
+                  type: "error",
                   title: "Error",
                   message:
                     "El inicio de sesión con Google falló. Por favor, inténtalo de nuevo.",
-                });
-              }}
+                })
+              }
               theme="outline"
               size="large"
               width="436"
@@ -180,15 +186,15 @@ const Login = () => {
         </div>
       </form>
 
-      {alertInfo.message && (
-        <div style={{ position: "fixed", top: 20, right: 20, zIndex: 1000 }}>
-          <DescriptionAlerts
-            severity={alertInfo.severity}
-            title={alertInfo.title}
-            message={alertInfo.message}
-          />
-        </div>
-      )}
+      {/* 🔹 Modal de alerta */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        type={alertModal.type}
+        title={alertModal.title}
+        message={alertModal.message}
+        onConfirm={closeModal}
+        confirmText="Aceptar"
+      />
     </div>
   );
 };

@@ -1,106 +1,102 @@
-# AgroColombia Connect
+# AgroColombia Connect 🌱
 
-AgroColombia Connect es una plataforma web diseñada para conectar a agricultores colombianos con inversionistas interesados en financiar proyectos agrícolas. La plataforma busca fomentar el desarrollo del sector agrícola en Colombia, facilitando la inversión en proyectos prometedores.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-## Características
+AgroColombia Connect es una plataforma web moderna diseñada para conectar a agricultores colombianos con inversionistas interesados en financiar proyectos agrícolas. La plataforma, construida con React y Supabase, busca fomentar el desarrollo del sector agrícola en Colombia de una manera ágil y escalable.
+
+## 🚀 Características Principales
 
 - **Roles de Usuario:**
     - **Campesino:** Puede crear y gestionar sus proyectos agrícolas.
     - **Inversionista:** Puede explorar proyectos y realizar inversiones.
     - **Administrador:** Puede supervisar la plataforma, gestionar usuarios y proyectos.
-    - **Administrador Supremo:** Tiene control total sobre la plataforma.
-
 - **Gestión de Proyectos:**
-    - Creación de proyectos con detalles como nombre, descripción, costos, producción estimada e imagen.
-    - Listado y búsqueda de proyectos.
-    - Posibilidad de dar "like" a los proyectos.
-    - Seguimiento del estado de los proyectos (Buscando Inversión, En Progreso, Completado).
-
+    - Creación de proyectos con detalles completos (nombre, descripción, costos, etc.).
+    - Galería de proyectos con filtros y búsqueda.
+    - Seguimiento del estado de los proyectos (`Buscando Inversión`, `En Progreso`, `Completado`).
 - **Sistema de Inversión:**
-    - Los inversionistas pueden invertir en los proyectos.
-    - Se registra el monto recaudado para cada proyecto.
+    - Los inversionistas pueden financiar proyectos de forma segura.
+    - Visualización del progreso de la recaudación en tiempo real.
+- **Autenticación Moderna:**
+    - Registro e inicio de sesión de usuarios.
+    - Integración con proveedores OAuth como Google.
 
-- **Autenticación y Seguridad:**
-    - Sistema de registro e inicio de sesión para usuarios.
-    - Uso de sentencias preparadas para prevenir inyección SQL.
+## 🛠️ Tecnologías Utilizadas
 
-## Tecnologías Utilizadas
-
-- **Backend:** PHP
-- **Base de Datos:** MySQL (MariaDB)
 - **Frontend:**
-    - HTML5
-    - CSS3
-    - JavaScript
-    - [SweetAlert2](https://sweetalert2.github.io/) para notificaciones y alertas.
+    - **React:** Biblioteca para construir interfaces de usuario.
+    - **Vite:** Entorno de desarrollo y empaquetador ultra rápido.
+    - **React Router:** Para la gestión de rutas en la aplicación.
+    - **Material-UI:** Componentes de UI para un diseño atractivo y consistente.
+- **Backend & Base de Datos:**
+    - **Supabase:** Plataforma open-source que provee base de datos PostgreSQL, autenticación, APIs y más.
+- **Herramientas de Desarrollo:**
+    - **ESLint:** Para mantener la calidad y consistencia del código.
 
-## Esquema de la Base de Datos
+## ⚙️ Guía de Instalación y Configuración
 
-La base de datos se llama `agrocolombia_connect` y consta de las siguientes tablas:
+Sigue estos pasos para tener una copia del proyecto funcionando en tu máquina local.
 
-- **`usuarios`**: Almacena la información de los usuarios.
-    - `id`: INT (Clave Primaria, Autoincremental)
-    - `nombre`: VARCHAR
-    - `email`: VARCHAR (Único)
-    - `usuario`: VARCHAR
-    - `password`: VARCHAR
-    - `rol`: ENUM('campesino', 'inversionista', 'administrador', 'administradorsupremo')
-    - `fecha_registro`: TIMESTAMP
+### **Requisitos Previos**
 
-- **`proyectos`**: Contiene los detalles de los proyectos agrícolas.
-    - `id`: INT (Clave Primaria, Autoincremental)
-    - `nombre`: VARCHAR
-    - `descripcion`: TEXT
-    - `costos`: DECIMAL
-    - `monto_recaudado`: DECIMAL
-    - `produccion_estimada`: DECIMAL
-    - `estado`: ENUM('Buscando Inversión', 'En Progreso', 'Completado')
-    - `id_usuario`: INT (Clave Foránea a `usuarios.id`)
-    - `fecha_creacion`: TIMESTAMP
-    - `imagen_url`: VARCHAR
-    - `likes_count`: INT
+- [Node.js](https://nodejs.org/) (versión 18.x o superior)
+- [npm](https://www.npmjs.com/) (generalmente se instala con Node.js)
 
-- **`inversiones`**: Registra las inversiones realizadas en los proyectos.
-    - `id`: INT (Clave Primaria, Autoincremental)
-    - `id_proyecto`: INT (Clave Foránea a `proyectos.id`)
-    - `id_inversionista`: INT (Clave Foránea a `usuarios.id`)
-    - `monto_invertido`: DECIMAL
-    - `fecha_inversion`: TIMESTAMP
+### **1. Clonar el Repositorio**
 
-- **`proyecto_likes`**: Almacena los "likes" que los usuarios dan a los proyectos.
-    - `id`: INT (Clave Primaria, Autoincremental)
-    - `id_usuario`: INT (Clave Foránea a `usuarios.id`)
-    - `id_proyecto`: INT (Clave Foránea a `proyectos.id`)
-    - `fecha_like`: TIMESTAMP
+```bash
+git clone https://github.com/Jose2425F/Proyecto_web_Agro.git
+cd Proyecto_web_Agro/frontend
+```
 
-## Instalación y Configuración
+### **2. Instalar Dependencias**
 
-**Requisitos:**
-- Un servidor web local como [XAMPP](https://www.apachefriends.org/es/index.html) o similar, que incluya Apache y MySQL.
+Dentro de la carpeta `frontend`, ejecuta el siguiente comando para instalar todas las dependencias del proyecto:
 
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone https://github.com/Jose2425F/Proyecto_web_Agro.git
+```bash
+npm install
+```
+
+### **3. Configurar Variables de Entorno**
+
+Este proyecto se conecta a Supabase para el backend. Necesitarás crear un archivo `.env` en la raíz de la carpeta `frontend`.
+
+1.  Crea un archivo llamado `.env` en el directorio `frontend`.
+2.  Añade las siguientes variables con tus credenciales de Supabase:
+
+    ```env
+    VITE_SUPABASE_URL="TU_URL_DE_SUPABASE"
+    VITE_SUPABASE_ANON_KEY="TU_ANON_KEY_DE_SUPABASE"
     ```
 
-2.  **Importar la base de datos:**
-    - Inicie los servicios de Apache y MySQL desde el panel de control de XAMPP.
-    - Abra phpMyAdmin (`http://localhost/phpmyadmin`) y cree una nueva base de datos llamada `agrocolombia_connect`.
-    - Seleccione la base de datos `agrocolombia_connect` y vaya a la pestaña "Importar".
-    - Seleccione el archivo `sql/create.sql` del proyecto y haga clic en "Continuar".
+    Puedes obtener estas credenciales en el panel de tu proyecto de Supabase, en la sección `Settings` > `API`.
 
-3.  **Configurar la conexión a la base de datos:**
-    - El archivo `php/conexion_db.php` está configurado para conectarse a la base de datos con el usuario `root` y sin contraseña. Si su configuración de MySQL es diferente, actualice este archivo:
-      ```php
-      <?php
-      $conexion = mysqli_connect("localhost", "su_usuario", "su_contraseña", "agrocolombia_connect");
-      ?>
-      ```
+### **4. Configurar la Base de Datos**
 
-4.  **Ejecutar el proyecto:**
-    - Mueva la carpeta del proyecto clonado al directorio `htdocs` de su instalación de XAMPP (generalmente `C:/xampp/htdocs`).
-    - Abra su navegador y vaya a `http://localhost/Proyecto_web_Agro/`.
+El proyecto utiliza una base de datos PostgreSQL gestionada por Supabase.
 
-## Consideraciones de Seguridad
+1.  Ve al `SQL Editor` en tu panel de Supabase.
+2.  Copia el contenido del archivo `sql/create.sql` que se encuentra en la raíz de este repositorio.
+3.  Pega el script en el editor SQL y ejecútalo para crear las tablas necesarias.
 
-- **Almacenamiento de Contraseñas:** **¡IMPORTANTE!** Las contraseñas se almacenan actualmente en texto plano. Se recomienda encarecidamente implementar el hashing de contraseñas utilizando `password_hash()` y `password_verify()` de PHP para mejorar la seguridad por el momento el proyecto lo llevamos asi.
+> **Nota:** El script `create.sql` está escrito en dialecto de MySQL. Es posible que necesites hacer pequeños ajustes para que sea 100% compatible con PostgreSQL, como cambiar `AUTO_INCREMENT` por `GENERATED BY DEFAULT AS IDENTITY`.
+
+### **5. Ejecutar el Proyecto**
+
+Una vez completada la configuración, puedes iniciar el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+¡Abre tu navegador y visita `http://localhost:5173` (o el puerto que indique Vite) para ver la aplicación en funcionamiento!
+
+## 📜 Scripts Disponibles
+
+- `npm run dev`: Inicia el servidor de desarrollo con Vite.
+- `npm run build`: Compila la aplicación para producción.
+- `npm run lint`: Ejecuta el linter (ESLint) para analizar el código.
+- `npm run preview`: Sirve localmente el build de producción.

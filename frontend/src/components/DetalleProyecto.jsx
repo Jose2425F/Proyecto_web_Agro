@@ -1,125 +1,298 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import '../App.css';
-import { supabase } from '../supabaseClient';
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { supabase } from "../supabaseClient"
+import { useUser } from "../hooks/useUser"
+import "./DetalleProyecto.css"
 
 const DetalleProyecto = () => {
-    const { id } = useParams();
-    const [project, setProject] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { userId } = useUser()
+  const [proyecto, setProyecto] = useState(null)
+  const [inversiones, setInversiones] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [liked, setLiked] = useState(false)
 
-    useEffect(() => {
-        const fetchProjectDetails = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('proyectos')
-                    .select('*')
-                    .eq('id', id) 
-                    .single(); 
+  useEffect(() => {
+    if (id) {
+      fetchProyecto()
+      fetchInversiones()
+    }
+  }, [id])
 
-                if (error) {
-                    throw new Error(`Error al obtener los detalles: ${error.message}`);
-                }
-                
-                if (!data) {
-                    throw new Error("Proyecto no encontrado.");
-                }
-                setProject(data); 
+  const fetchProyecto = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select(`
+          *,
+          usuarios:id_usuario (
+            nombre,
+            apellido,
+            foto_perfil,
+            correo
+          )
+        `)
+        .eq("id", id)
+        .single()
 
-            } catch (err) {
-                console.error("Error al cargar el detalle del proyecto:", err);
-                setError(err.message || 'Error al obtener los detalles del proyecto.');
-            } finally {
-                setLoading(false);
-            }
-        };
+      if (error) throw error
+      setProyecto(data)
+    } catch (error) {
+      console.error("Error al cargar proyecto:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        fetchProjectDetails();
-    }, [id]);
+  const fetchInversiones = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("inversiones")
+        .select(`
+          *,
+          usuarios:id_inversor (
+            nombre,
+            apellido,
+            foto_perfil
+          )
+        `)
+        .eq("id_proyecto", id)
+        .order("fecha_inversion", { ascending: false })
 
-    const handleInvest = () => {
-        alert('Gracias por tu interés en invertir en este proyecto.');
-    };
+      if (error) throw error
+      setInversiones(data || [])
+    } catch (error) {
+      console.error("Error al cargar inversiones:", error)
+    }
+  }
 
-    const handleLike = () => {
-        alert('¡Has dado like a este proyecto!');
-    };
-
-    const handleFavorite = () => {
-        alert('Este proyecto ha sido agregado a tus favoritos.');
-    };
-
-    if (loading) {
-        return <div className="page-container">Cargando...</div>;
+  const handleLike = async () => {
+    if (!userId) {
+      navigate("/login")
+      return
     }
 
-    if (error) {
-        return <div className="page-container">Error: {error}</div>;
-    }
-    
-    if (!project) {
-        return <div className="page-container">Proyecto no encontrado.</div>;
-    }
+    try {
+      const newLikesCount = (proyecto.likes_count || 0) + (liked ? -1 : 1)
 
-    const progressPercentage = Math.min(100, Math.round((project.monto_recaudado / project.costos) * 100));
+      const { error } = await supabase.from("proyectos").update({ likes_count: newLikesCount }).eq("id", id)
 
+      if (error) throw error
+
+      setProyecto({ ...proyecto, likes_count: newLikesCount })
+      setLiked(!liked)
+    } catch (error) {
+      console.error("Error al dar like:", error)
+    }
+  }
+
+  const formatMonto = (monto) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(monto)
+  }
+
+  const calcularProgreso = () => {
+    if (!proyecto) return 0
+    return ((proyecto.monto_recaudado / proyecto.costos) * 100).toFixed(1)
+  }
+
+  if (loading) {
     return (
-        <div className="page-container">
-            <div className="detalle-proyecto-container">
-                <div className="detalle-proyecto-header">
-                    <h1>{project.nombre}</h1>
-                    <span className={`estado-proyecto ${project.estado.toLowerCase().replace(' ', '-')}`}>
-                        {project.estado}
-                    </span>
-                </div>
+      <div className="detalle-loading">
+        <div className="spinner"></div>
+        <p>Cargando proyecto...</p>
+      </div>
+    )
+  }
 
-                <div className="detalle-proyecto-body">
-                    <div className="detalle-proyecto-img-container">
-                        <img
-                            src={project.imagen_url} 
-                            alt={project.nombre}
-                            className="detalle-proyecto-img"
-                        />
-                    </div>
+  if (!proyecto) {
+    return (
+      <div className="detalle-error">
+        <h2>Proyecto no encontrado</h2>
+        <button onClick={() => navigate("/projects")}>Volver a Proyectos</button>
+      </div>
+    )
+  }
 
-                    <div className="detalle-proyecto-info">
-                        <p className="descripcion">{project.descripcion}</p>
-                        
-                        <div className="progress-section">
-                            <div className="progress-bar-container">
-                                <div
-                                    className="progress-bar"
-                                    style={{ width: `${progressPercentage}%` }}
-                                ></div>
-                                <span className="progress-bar-text">{progressPercentage}%</span>
-                            </div>
-                            <div className="progress-labels">
-                                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.monto_recaudado)}</span>
-                                <span>Meta: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(project.costos)}</span>
-                            </div>
-                        </div>
+  const progreso = calcularProgreso()
+  const montoDisponible = proyecto.costos - proyecto.monto_recaudado
+  const numeroInversores = new Set(inversiones.map((inv) => inv.id_inversor)).size
 
-                        <div className="info-adicional">
-                            <p><strong>Producción Estimada:</strong> {project.produccion_estimada}</p>
-                            <p><strong>Fecha de Creación:</strong> {new Date(project.fecha_creacion).toLocaleDateString()}</p>
-                            <p><strong>Likes:</strong> {project.likes_count}</p>
-                        </div>
-
-                        <div className="actions-container">
-                            <div className="top-actions">
-                            {project.estado !== 'En Progreso' && (
-                                    <button className="btn-support" onClick={handleInvest}>Invertir</button>
-                            )}
-                            <button className="btn-like" onClick={handleLike}>Dar Like</button>
-                            </div>
-                            <button className="btn-favorite" onClick={handleFavorite}>Agregar a Favoritos</button>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className="detalle-proyecto-container">
+      <div className="detalle-proyecto-header">
+        <button className="btn-back-detalle" onClick={() => navigate("/projects")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Volver
+        </button>
+        <h1>{proyecto.nombre}</h1>
+        <div className="detalle-meta-info">
+          <span className={`estado-proyecto estado-${proyecto.estado.toLowerCase().replace(/ /g, "-")}`}>
+            {proyecto.estado}
+          </span>
+          <div className="meta-items-group">
+            <div className="meta-item-detalle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{new Date(proyecto.fecha_creacion).toLocaleDateString("es-CO")}</span>
             </div>
+            <div className="meta-item-detalle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span>{numeroInversores} inversores</span>
+            </div>
+            <button className={`btn-like-detalle ${liked ? "liked" : ""}`} onClick={handleLike}>
+              <svg viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              <span>{proyecto.likes_count || 0}</span>
+            </button>
+          </div>
         </div>
-    );
-};
+      </div>
 
-export default DetalleProyecto;
+      <div className="detalle-proyecto-body">
+        <div className="detalle-proyecto-img-container">
+          <img
+            className="detalle-proyecto-img"
+            src={proyecto.imagen_url || "/placeholder.svg?height=400&width=600"}
+            alt={proyecto.nombre}
+            onError={(e) => {
+              e.target.src = "/placeholder.svg?height=400&width=600"
+            }}
+          />
+        </div>
+
+        <div className="detalle-proyecto-info">
+          <div className="progress-section">
+            <h3>Financiamiento</h3>
+            <div className="progress-bar-container">
+              <div className="progress-bar" style={{ width: `${Math.min(progreso, 100)}%` }}></div>
+              <div className="progress-bar-text">{progreso}%</div>
+            </div>
+            <div className="progress-labels">
+              <span style={{ color: "#14c900", fontWeight: "600" }}>{formatMonto(proyecto.monto_recaudado)}</span>
+              <span style={{ color: "#888" }}>de {formatMonto(proyecto.costos)}</span>
+            </div>
+            <div className="progress-percentage">{progreso}% Completado</div>
+          </div>
+
+          <div className="descripcion">
+            <h3>Descripción del Proyecto</h3>
+            <p>{proyecto.descripcion}</p>
+          </div>
+
+          <div className="info-adicional">
+            <p>
+              <strong>Producción Estimada:</strong> {proyecto.produccion_estimada} toneladas
+            </p>
+            <p>
+              <strong>Inversores:</strong> {numeroInversores} personas
+            </p>
+            <p>
+              <strong>Total Inversiones:</strong> {inversiones.length}
+            </p>
+            <p>
+              <strong>Disponible para invertir:</strong> {formatMonto(montoDisponible)}
+            </p>
+          </div>
+
+          <div className="actions-container">
+            <button
+              className="btn-support"
+              onClick={() => navigate(`/invertir/${proyecto.id}`)}
+              disabled={proyecto.estado !== "Buscando Inversión" || montoDisponible <= 0}
+            >
+              <i className="icon">💰</i>
+              {montoDisponible <= 0 ? "Financiamiento Completo" : "Invertir Ahora"}
+            </button>
+          </div>
+
+          <div className="creator-section-detalle">
+            <h3>Creador del Proyecto</h3>
+            <div className="creator-info-detalle">
+              <img
+                src={proyecto.usuarios?.foto_perfil || "/placeholder.svg?height=60&width=60"}
+                alt={`${proyecto.usuarios?.nombre} ${proyecto.usuarios?.apellido}`}
+                onError={(e) => {
+                  e.target.src = "/placeholder.svg?height=60&width=60"
+                }}
+              />
+              <div>
+                <h4>
+                  {proyecto.usuarios?.nombre} {proyecto.usuarios?.apellido}
+                </h4>
+                <p className="creator-role-detalle">Campesino</p>
+                <p className="creator-email-detalle">{proyecto.usuarios?.correo}</p>
+              </div>
+            </div>
+          </div>
+
+          {inversiones.length > 0 && (
+            <div className="inversiones-section-detalle">
+              <h3>Inversiones Recibidas ({inversiones.length})</h3>
+              <div className="inversiones-list-detalle">
+                {inversiones.slice(0, 5).map((inversion) => (
+                  <div key={inversion.id} className="inversion-item-detalle">
+                    <img
+                      src={inversion.usuarios?.foto_perfil || "/placeholder.svg?height=40&width=40"}
+                      alt={`${inversion.usuarios?.nombre} ${inversion.usuarios?.apellido}`}
+                      onError={(e) => {
+                        e.target.src = "/placeholder.svg?height=40&width=40"
+                      }}
+                    />
+                    <div className="inversion-info-detalle">
+                      <h5>
+                        {inversion.usuarios?.nombre} {inversion.usuarios?.apellido}
+                      </h5>
+                      <p className="inversion-tipo-detalle">
+                        {inversion.tipo_inversion === "Capital" ? "Dueño Único" : "Accionista"}
+                      </p>
+                    </div>
+                    <div className="inversion-details-detalle">
+                      <span className="inversion-monto-detalle">{formatMonto(inversion.monto_invertido)}</span>
+                      <span className="inversion-fecha-detalle">
+                        {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO")}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {inversiones.length > 5 && (
+                <p style={{ textAlign: "center", color: "#888", marginTop: "1rem", fontSize: "0.9rem" }}>
+                  Y {inversiones.length - 5} inversiones más...
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default DetalleProyecto
