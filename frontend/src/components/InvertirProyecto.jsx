@@ -6,6 +6,7 @@ import { supabase } from "../supabaseClient"
 import "./InvertirProyecto.css"
 import { useUser } from "../hooks/useUser"
 import jsPDF from "jspdf"
+import AlertModal from "./AlertModal"
 
 const InvertirProyecto = () => {
   const { userId, setUserId } = useUser()
@@ -19,6 +20,14 @@ const InvertirProyecto = () => {
   const [userData, setUserData] = useState(null)
   const [proyectoURL, setProyectoUrl] = useState(null)
   const [userRole, setUserRole] = useState(null)
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+    details: null,
+  })
 
   const [formData, setFormData] = useState({
     tipoInversion: "",
@@ -225,7 +234,6 @@ const InvertirProyecto = () => {
     doc.save(nombreArchivo)
   }
 
-  // Obtener usuario actual
   useEffect(() => {
     setLoading(true)
 
@@ -237,7 +245,6 @@ const InvertirProyecto = () => {
     }
   }, [setUserId])
 
-  // Cargar datos del proyecto
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
@@ -258,13 +265,10 @@ const InvertirProyecto = () => {
   }, [id])
 
   const formatearMonto = (valor) => {
-    // Remover todo excepto números
     const numeroLimpio = valor.replace(/\D/g, "")
 
-    // Si está vacío, retornar vacío
     if (!numeroLimpio) return ""
 
-    // Convertir a número y formatear con separadores de miles
     return Number(numeroLimpio).toLocaleString("es-CO")
   }
 
@@ -272,13 +276,11 @@ const InvertirProyecto = () => {
     const valor = e.target.value
     const numeroLimpio = valor.replace(/\D/g, "")
 
-    // Actualizar el valor numérico real
     setFormData({
       ...formData,
       monto: numeroLimpio,
     })
 
-    // Actualizar el valor formateado para mostrar
     setMontoFormateado(formatearMonto(valor))
   }
 
@@ -307,52 +309,91 @@ const InvertirProyecto = () => {
     fetchUser()
   }, [userId])
 
-  // Enviar inversión y mostrar comprobante
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (userRole !== "inversionista") {
-      alert(
-        "Solo los usuarios con rol de inversionista pueden realizar inversiones.\nPor favor, contacta al administrador para actualizar tu rol.",
-      )
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Acceso Restringido",
+        message: "Solo los usuarios con rol de inversionista pueden realizar inversiones.",
+        details: (
+          <>
+            <p className="detail-role">
+              Tu rol actual es: <strong>{userRole}</strong>
+            </p>
+            <p>Contacta al administrador para actualizar tu rol.</p>
+          </>
+        ),
+      })
       return
     }
 
     if (!formData.tipoInversion) {
-      alert("Selecciona un tipo de inversión.")
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Selecciona un tipo de inversión",
+        message: "Por favor, selecciona un tipo de inversión.",
+      })
       return
     }
 
     const montoNum = Number.parseFloat(formData.monto)
     if (isNaN(montoNum) || montoNum <= 0) {
-      alert("El monto debe ser un número positivo.")
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Monto Inválido",
+        message: "El monto debe ser un número positivo.",
+      })
       return
     }
 
     const minimo = formData.tipoInversion === "dueno_unico" ? project.costos * 0.3 : project.costos * 0.1
 
     if (montoNum < minimo) {
-      alert(
-        `El monto mínimo para ser ${
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Monto Mínimo Insuficiente",
+        message: `El monto mínimo para ser ${
           formData.tipoInversion === "dueno_unico" ? "Dueño Único" : "Accionista"
         } es $${minimo.toLocaleString("es-CO")}`,
-      )
+      })
       return
     }
 
     const montoDisponible = project.costos - project.monto_recaudado
+
     if (montoNum > montoDisponible) {
-      alert(
-        `⚠️ El monto excede el capital disponible del proyecto.\n\n` +
-          `💰 Disponible: $${montoDisponible.toLocaleString("es-CO")}\n` +
-          `❌ Intentaste invertir: $${montoNum.toLocaleString("es-CO")}\n\n` +
-          `Por favor, ingresa un monto menor o igual al disponible.`,
-      )
+      setModalConfig({
+        isOpen: true,
+        type: "warning",
+        title: "El monto excede el capital disponible del proyecto",
+        message: "Por favor, ingresa un monto menor o igual al disponible.",
+        details: (
+          <>
+            <p className="detail-available">
+              💰 <strong>Disponible:</strong> ${montoDisponible.toLocaleString("es-CO")}
+            </p>
+            <p className="detail-attempted">
+              ❌ <strong>Intentaste invertir:</strong> ${montoNum.toLocaleString("es-CO")}
+            </p>
+          </>
+        ),
+      })
       return
     }
 
     if (!formData.aceptaTerminos) {
-      alert("Debes aceptar los términos y condiciones.")
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Términos y Condiciones",
+        message: "Debes aceptar los términos y condiciones.",
+      })
       return
     }
 
@@ -366,7 +407,12 @@ const InvertirProyecto = () => {
 
       if (error) {
         console.error("❌ Error Supabase:", error.message)
-        alert("Error al registrar la inversión: " + error.message)
+        setModalConfig({
+          isOpen: true,
+          type: "error",
+          title: "Error al Registrar Inversión",
+          message: "Error al registrar la inversión: " + error.message,
+        })
         throw error
       }
 
@@ -379,7 +425,12 @@ const InvertirProyecto = () => {
 
       if (updateError) {
         console.error("❌ Error al actualizar monto_recaudado:", updateError.message)
-        alert("La inversión se registró pero hubo un error al actualizar el proyecto")
+        setModalConfig({
+          isOpen: true,
+          type: "error",
+          title: "Error al Actualizar Proyecto",
+          message: "La inversión se registró pero hubo un error al actualizar el proyecto.",
+        })
         throw updateError
       }
 
@@ -396,7 +447,12 @@ const InvertirProyecto = () => {
       })
     } catch (err) {
       console.error("Error general:", err)
-      alert("Error al registrar la inversión.")
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "Error General",
+        message: "Error al registrar la inversión.",
+      })
     }
   }
 
@@ -431,7 +487,6 @@ const InvertirProyecto = () => {
 
   return (
     <div className="invertir-container">
-      {/* Header con imagen del proyecto */}
       <div className="invertir-header">
         <div className="header-overlay"></div>
         <img
@@ -456,7 +511,6 @@ const InvertirProyecto = () => {
       {!comprobante ? (
         <div className="invertir-content">
           <div className="content-grid">
-            {/* Columna izquierda - Información del proyecto */}
             <div className="left-column">
               <div className="project-info-card">
                 <div className="info-header">
@@ -531,7 +585,6 @@ const InvertirProyecto = () => {
                 </div>
               </div>
 
-              {/* Beneficios de invertir */}
               <div className="benefits-card">
                 <h3>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -568,7 +621,6 @@ const InvertirProyecto = () => {
               </div>
             </div>
 
-            {/* Columna derecha - Formulario de inversión */}
             <div className="right-column">
               {userRole && userRole !== "inversionista" && (
                 <div className="role-warning">
@@ -593,7 +645,6 @@ const InvertirProyecto = () => {
                   <p>Selecciona tu tipo de inversión y monto</p>
                 </div>
 
-                {/* Tipo de inversión */}
                 <div className="form-group">
                   <label htmlFor="tipoInversion">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -649,7 +700,6 @@ const InvertirProyecto = () => {
                   </div>
                 </div>
 
-                {/* Monto */}
                 <div className="form-group">
                   <label htmlFor="monto">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -683,7 +733,6 @@ const InvertirProyecto = () => {
                   )}
                 </div>
 
-                {/* Términos y condiciones */}
                 <div className="form-group">
                   <div className="terms-section">
                     <label className="checkbox-label">
@@ -878,6 +927,16 @@ const InvertirProyecto = () => {
           </div>
         </div>
       )}
+
+      <AlertModal
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        details={modalConfig.details}
+        onConfirm={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        confirmText="Aceptar"
+      />
     </div>
   )
 }

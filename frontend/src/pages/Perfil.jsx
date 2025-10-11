@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "../supabaseClient"
@@ -12,10 +10,15 @@ const Perfil = () => {
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState(null)
   const [inversiones, setInversiones] = useState([])
+  const [proyectos, setProyectos] = useState([])
+  const [inversionesRecibidas, setInversionesRecibidas] = useState([])
   const [estadisticas, setEstadisticas] = useState({
     totalInvertido: 0,
     proyectosActivos: 0,
     retornoEstimado: 0,
+    totalProyectos: 0,
+    montoRecaudado: 0,
+    totalInversores: 0,
   })
   const [editMode, setEditMode] = useState(false)
   const [photoPreview, setPhotoPreview] = useState(null)
@@ -33,9 +36,17 @@ const Perfil = () => {
   useEffect(() => {
     if (userId) {
       fetchUserData()
-      fetchInversiones()
     }
   }, [userId])
+
+  useEffect(() => {
+    if (userData?.rol === "inversionista") {
+      fetchInversiones()
+    } else if (userData?.rol === "campesino") {
+      fetchProyectos()
+      fetchInversionesRecibidas()
+    }
+  }, [userData?.rol])
 
   const fetchUserData = async () => {
     try {
@@ -94,6 +105,86 @@ const Perfil = () => {
       })
     } catch (error) {
       console.error("Error al cargar inversiones:", error)
+    }
+  }
+
+  const fetchProyectos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select("*")
+        .eq("id_usuario", userId)
+        .order("fecha_creacion", { ascending: false })
+
+      if (error) throw error
+
+      setProyectos(data || [])
+
+      const totalProyectos = data?.length || 0
+      const montoRecaudado = data?.reduce((sum, proj) => sum + (proj.monto_recaudado || 0), 0) || 0
+      const proyectosActivos = data?.filter((p) => p.estado === "Activo").length || 0
+
+      setEstadisticas({
+        totalProyectos,
+        montoRecaudado,
+        proyectosActivos,
+      })
+    } catch (error) {
+      console.error("Error al cargar proyectos:", error)
+    }
+  }
+
+  const fetchInversionesRecibidas = async () => {
+    try {
+      // Primero obtener los IDs de los proyectos del campesino
+      const { data: proyectosData, error: proyectosError } = await supabase
+        .from("proyectos")
+        .select("id")
+        .eq("id_usuario", userId)
+
+      if (proyectosError) throw proyectosError
+
+      const proyectoIds = proyectosData?.map((p) => p.id) || []
+
+      if (proyectoIds.length === 0) {
+        setInversionesRecibidas([])
+        return
+      }
+
+      // Obtener inversiones de esos proyectos
+      const { data, error } = await supabase
+        .from("inversiones")
+        .select(
+          `
+          *,
+          proyectos (
+            id,
+            nombre,
+            imagen_url,
+            estado
+          ),
+          usuarios!inversiones_id_inversor_fkey (
+            nombre,
+            apellido,
+            foto_perfil
+          )
+        `,
+        )
+        .in("id_proyecto", proyectoIds)
+        .order("fecha_inversion", { ascending: false })
+
+      if (error) throw error
+
+      setInversionesRecibidas(data || [])
+
+      // Actualizar estadística de inversores únicos
+      const totalInversores = new Set(data?.map((inv) => inv.id_inversor)).size || 0
+      setEstadisticas((prev) => ({
+        ...prev,
+        totalInversores,
+      }))
+    } catch (error) {
+      console.error("Error al cargar inversiones recibidas:", error)
     }
   }
 
@@ -236,6 +327,62 @@ const Perfil = () => {
     )
   }
 
+  const renderEstadisticasQuick = () => {
+    if (userData?.rol === "inversionista") {
+      return (
+        <>
+          <div className="stat-quick-card">
+            <div className="stat-icon">💰</div>
+            <div className="stat-content">
+              <span className="stat-value">${estadisticas.totalInvertido.toLocaleString("es-CO")}</span>
+              <span className="stat-label">Total Invertido</span>
+            </div>
+          </div>
+          <div className="stat-quick-card">
+            <div className="stat-icon">📊</div>
+            <div className="stat-content">
+              <span className="stat-value">{estadisticas.proyectosActivos}</span>
+              <span className="stat-label">Proyectos Activos</span>
+            </div>
+          </div>
+          <div className="stat-quick-card">
+            <div className="stat-icon">📈</div>
+            <div className="stat-content">
+              <span className="stat-value">${estadisticas.retornoEstimado.toLocaleString("es-CO")}</span>
+              <span className="stat-label">Retorno Estimado</span>
+            </div>
+          </div>
+        </>
+      )
+    } else if (userData?.rol === "campesino") {
+      return (
+        <>
+          <div className="stat-quick-card">
+            <div className="stat-icon">🌾</div>
+            <div className="stat-content">
+              <span className="stat-value">{estadisticas.totalProyectos}</span>
+              <span className="stat-label">Total Proyectos</span>
+            </div>
+          </div>
+          <div className="stat-quick-card">
+            <div className="stat-icon">💰</div>
+            <div className="stat-content">
+              <span className="stat-value">${estadisticas.montoRecaudado.toLocaleString("es-CO")}</span>
+              <span className="stat-label">Monto Recaudado</span>
+            </div>
+          </div>
+          <div className="stat-quick-card">
+            <div className="stat-icon">👥</div>
+            <div className="stat-content">
+              <span className="stat-value">{estadisticas.totalInversores}</span>
+              <span className="stat-label">Inversores</span>
+            </div>
+          </div>
+        </>
+      )
+    }
+  }
+
   return (
     <div className="perfil-container">
       {alertInfo && (
@@ -287,7 +434,7 @@ const Perfil = () => {
               </h1>
               <p className="perfil-email">{userData?.correo}</p>
               <div className="perfil-badges">
-                <span className="badge-rol">{userData?.rol || "Inversionista"}</span>
+                <span className="badge-rol">{userData?.rol || "Usuario"}</span>
                 <span className={`badge-estado ${userData?.cuenta_estado?.toLowerCase()}`}>
                   {userData?.cuenta_estado || "Activa"}
                 </span>
@@ -295,34 +442,10 @@ const Perfil = () => {
             </div>
           </div>
 
-          {/* Estadísticas rápidas */}
-          <div className="stats-quick">
-            <div className="stat-quick-card">
-              <div className="stat-icon">💰</div>
-              <div className="stat-content">
-                <span className="stat-value">${estadisticas.totalInvertido.toLocaleString("es-CO")}</span>
-                <span className="stat-label">Total Invertido</span>
-              </div>
-            </div>
-            <div className="stat-quick-card">
-              <div className="stat-icon">📊</div>
-              <div className="stat-content">
-                <span className="stat-value">{estadisticas.proyectosActivos}</span>
-                <span className="stat-label">Proyectos Activos</span>
-              </div>
-            </div>
-            <div className="stat-quick-card">
-              <div className="stat-icon">📈</div>
-              <div className="stat-content">
-                <span className="stat-value">${estadisticas.retornoEstimado.toLocaleString("es-CO")}</span>
-                <span className="stat-label">Retorno Estimado</span>
-              </div>
-            </div>
-          </div>
+          <div className="stats-quick">{renderEstadisticasQuick()}</div>
         </div>
       </div>
 
-      {/* Navegación por pestañas */}
       <div className="perfil-tabs">
         <button className={`tab ${activeTab === "perfil" ? "active" : ""}`} onClick={() => setActiveTab("perfil")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -331,25 +454,57 @@ const Perfil = () => {
           </svg>
           Mi Perfil
         </button>
-        <button
-          className={`tab ${activeTab === "inversiones" ? "active" : ""}`}
-          onClick={() => setActiveTab("inversiones")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="1" x2="12" y2="23" />
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-          Mis Inversiones
-        </button>
-        <button
-          className={`tab ${activeTab === "actividad" ? "active" : ""}`}
-          onClick={() => setActiveTab("actividad")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          Actividad
-        </button>
+
+        {userData?.rol === "inversionista" && (
+          <>
+            <button
+              className={`tab ${activeTab === "inversiones" ? "active" : ""}`}
+              onClick={() => setActiveTab("inversiones")}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+              Mis Inversiones
+            </button>
+            <button
+              className={`tab ${activeTab === "actividad" ? "active" : ""}`}
+              onClick={() => setActiveTab("actividad")}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Actividad
+            </button>
+          </>
+        )}
+
+        {userData?.rol === "campesino" && (
+          <>
+            <button
+              className={`tab ${activeTab === "proyectos" ? "active" : ""}`}
+              onClick={() => setActiveTab("proyectos")}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Mis Proyectos
+            </button>
+            <button
+              className={`tab ${activeTab === "inversiones-recibidas" ? "active" : ""}`}
+              onClick={() => setActiveTab("inversiones-recibidas")}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="8.5" cy="7" r="4" />
+                <line x1="20" y1="8" x2="20" y2="14" />
+                <line x1="23" y1="11" x2="17" y2="11" />
+              </svg>
+              Inversiones Recibidas
+            </button>
+          </>
+        )}
       </div>
 
       {/* Contenido de las pestañas */}
@@ -376,7 +531,8 @@ const Perfil = () => {
                       <div className="photo-preview">
                         <img
                           src={
-                            photoPreview || userData?.foto_perfil
+                            photoPreview ||
+                            userData?.foto_perfil 
                           }
                           alt="Preview"
                           className="photo-preview-img"
@@ -498,7 +654,7 @@ const Perfil = () => {
                     </div>
                     <div className="info-row">
                       <span className="info-label">Rol</span>
-                      <span className="info-value">{userData?.rol || "Inversionista"}</span>
+                      <span className="info-value">{userData?.rol || "Usuario"}</span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Estado de Cuenta</span>
@@ -520,52 +676,93 @@ const Perfil = () => {
                 )}
               </div>
 
-              {/* Estadísticas detalladas */}
               <div className="perfil-card">
                 <div className="card-header">
-                  <h2>Estadísticas de Inversión</h2>
+                  <h2>
+                    {userData?.rol === "inversionista" ? "Estadísticas de Inversión" : "Estadísticas de Proyectos"}
+                  </h2>
                 </div>
                 <div className="stats-detailed">
-                  <div className="stat-detailed-card">
-                    <div className="stat-icon-large">💰</div>
-                    <h3>${estadisticas.totalInvertido.toLocaleString("es-CO")}</h3>
-                    <p>Total Invertido</p>
-                    <div className="stat-progress">
-                      <div className="progress-bar-stat">
-                        <div className="progress-fill-stat" style={{ width: "75%" }}></div>
+                  {userData?.rol === "inversionista" ? (
+                    <>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">💰</div>
+                        <h3>${estadisticas.totalInvertido.toLocaleString("es-CO")}</h3>
+                        <p>Total Invertido</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat" style={{ width: "75%" }}></div>
+                          </div>
+                          <span>75% del objetivo anual</span>
+                        </div>
                       </div>
-                      <span>75% del objetivo anual</span>
-                    </div>
-                  </div>
-                  <div className="stat-detailed-card">
-                    <div className="stat-icon-large">📊</div>
-                    <h3>{estadisticas.proyectosActivos}</h3>
-                    <p>Proyectos Activos</p>
-                    <div className="stat-progress">
-                      <div className="progress-bar-stat">
-                        <div className="progress-fill-stat success" style={{ width: "60%" }}></div>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">📊</div>
+                        <h3>{estadisticas.proyectosActivos}</h3>
+                        <p>Proyectos Activos</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat success" style={{ width: "60%" }}></div>
+                          </div>
+                          <span>Diversificación óptima</span>
+                        </div>
                       </div>
-                      <span>Diversificación óptima</span>
-                    </div>
-                  </div>
-                  <div className="stat-detailed-card">
-                    <div className="stat-icon-large">📈</div>
-                    <h3>${estadisticas.retornoEstimado.toLocaleString("es-CO")}</h3>
-                    <p>Retorno Estimado</p>
-                    <div className="stat-progress">
-                      <div className="progress-bar-stat">
-                        <div className="progress-fill-stat warning" style={{ width: "85%" }}></div>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">📈</div>
+                        <h3>${estadisticas.retornoEstimado.toLocaleString("es-CO")}</h3>
+                        <p>Retorno Estimado</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat warning" style={{ width: "85%" }}></div>
+                          </div>
+                          <span>+15% de rendimiento</span>
+                        </div>
                       </div>
-                      <span>+15% de rendimiento</span>
-                    </div>
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">🌾</div>
+                        <h3>{estadisticas.totalProyectos}</h3>
+                        <p>Total de Proyectos</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat" style={{ width: "100%" }}></div>
+                          </div>
+                          <span>Proyectos creados</span>
+                        </div>
+                      </div>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">💰</div>
+                        <h3>${estadisticas.montoRecaudado.toLocaleString("es-CO")}</h3>
+                        <p>Monto Recaudado</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat success" style={{ width: "70%" }}></div>
+                          </div>
+                          <span>Capital obtenido</span>
+                        </div>
+                      </div>
+                      <div className="stat-detailed-card">
+                        <div className="stat-icon-large">👥</div>
+                        <h3>{estadisticas.totalInversores}</h3>
+                        <p>Inversores</p>
+                        <div className="stat-progress">
+                          <div className="progress-bar-stat">
+                            <div className="progress-fill-stat warning" style={{ width: "80%" }}></div>
+                          </div>
+                          <span>Personas invirtiendo</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === "inversiones" && (
+        {activeTab === "inversiones" && userData?.rol === "inversionista" && (
           <div className="tab-content">
             <div className="inversiones-grid">
               {inversiones.length > 0 ? (
@@ -623,11 +820,121 @@ const Perfil = () => {
           </div>
         )}
 
-        {activeTab === "actividad" && (
+        {activeTab === "proyectos" && userData?.rol === "campesino" && (
+          <div className="tab-content">
+            <div className="inversiones-grid">
+              {proyectos.length > 0 ? (
+                proyectos.map((proyecto) => (
+                  <div key={proyecto.id} className="inversion-card">
+                    <div className="inversion-image">
+                      <img
+                        src={proyecto.imagen_url || "/placeholder.svg?height=200&width=300&query=agricultural project"}
+                        alt={proyecto.nombre}
+                      />
+                      <span className={`estado-badge ${proyecto.estado?.toLowerCase().replace(/ /g, "-")}`}>
+                        {proyecto.estado}
+                      </span>
+                    </div>
+                    <div className="inversion-content">
+                      <h3>{proyecto.nombre}</h3>
+                      <div className="inversion-details">
+                        <div className="detail-item">
+                          <span className="detail-label">Capital</span>
+                          <span className="detail-value">${proyecto.costos?.toLocaleString("es-CO")}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Recaudado</span>
+                          <span className="detail-value">${proyecto.monto_recaudado?.toLocaleString("es-CO")}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Progreso</span>
+                          <span className="detail-value">
+                            {Math.round((proyecto.monto_recaudado / proyecto.costos) * 100)}%
+                          </span>
+                        </div>
+                      </div>
+                      <button className="btn-ver-proyecto" onClick={() => navigate(`/projects/${proyecto.id}`)}>
+                        Ver Detalles
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">🌾</div>
+                  <h3>No tienes proyectos aún</h3>
+                  <p>Crea tu primer proyecto y comienza a recibir inversiones</p>
+                  <button className="btn-explorar" onClick={() => navigate("/crear-proyecto")}>
+                    Crear Proyecto
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "inversiones-recibidas" && userData?.rol === "campesino" && (
+          <div className="tab-content">
+            <div className="inversiones-grid">
+              {inversionesRecibidas.length > 0 ? (
+                inversionesRecibidas.map((inversion) => (
+                  <div key={inversion.id} className="inversion-card">
+                    <div className="inversion-image">
+                      <img
+                        src={
+                          inversion.proyectos?.imagen_url
+                        }
+                        alt={inversion.proyectos?.nombre}
+                      />
+                    </div>
+                    <div className="inversion-content">
+                      <h3>{inversion.proyectos?.nombre}</h3>
+                      <div className="inversor-info">
+                        <img
+                          src={
+                            inversion.usuarios?.foto_perfil || "/placeholder.svg?height=40&width=40&query=user avatar"
+                          }
+                          alt={`${inversion.usuarios?.nombre} ${inversion.usuarios?.apellido}`}
+                          className="inversor-avatar"
+                        />
+                        <div>
+                          <p className="inversor-nombre">
+                            {inversion.usuarios?.nombre} {inversion.usuarios?.apellido}
+                          </p>
+                          <p className="inversor-tipo">{inversion.tipo_inversion}</p>
+                        </div>
+                      </div>
+                      <div className="inversion-details">
+                        <div className="detail-item">
+                          <span className="detail-label">Monto</span>
+                          <span className="detail-value">${inversion.monto_invertido?.toLocaleString("es-CO")}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Fecha</span>
+                          <span className="detail-value">
+                            {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">👥</div>
+                  <h3>No has recibido inversiones aún</h3>
+                  <p>Comparte tus proyectos para atraer inversores</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "actividad" && userData?.rol === "inversionista" && (
           <div className="tab-content">
             <div className="actividad-timeline">
               {inversiones.length > 0 ? (
-                inversiones.map((inversion, index) => (
+                inversiones.map((inversion) => (
                   <div key={inversion.id} className="timeline-item">
                     <div className="timeline-marker"></div>
                     <div className="timeline-content">

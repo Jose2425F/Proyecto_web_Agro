@@ -600,6 +600,38 @@
   box-shadow: 0 8px 16px rgba(20, 201, 0, 0.4);
 }
 
+/* Información del inversor en inversiones recibidas */
+.inversor-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.inversor-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #14c900;
+  object-fit: cover;
+}
+
+.inversor-nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0f0f0;
+  margin: 0 0 0.25rem 0;
+}
+
+.inversor-tipo {
+  font-size: 0.85rem;
+  color: #14c900;
+  margin: 0;
+}
+
 /* Timeline de actividad */
 .actividad-timeline {
   display: flex;

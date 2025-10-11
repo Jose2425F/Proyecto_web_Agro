@@ -22,12 +22,10 @@ const Inversiones = () => {
   const [vistaActual, setVistaActual] = useState("dashboard")
 
   useEffect(() => {
-    if (!userId) {
-      navigate("/login")
-      return
+    if (userId) {
+      fetchData()
     }
-    fetchData()
-  }, [userId, navigate])
+  }, [userId])
 
   const fetchData = async () => {
     try {
@@ -59,6 +57,16 @@ const Inversiones = () => {
         .order("fecha_inversion", { ascending: false })
 
       if (inversionesError) throw inversionesError
+
+      console.log("[v0] Inversiones data:", inversionesData)
+      inversionesData?.forEach((inv) => {
+        console.log("[v0] Inversión:", {
+          id: inv.id,
+          tipo_inversion: inv.tipo_inversion,
+          estado: inv.proyectos?.estado,
+        })
+      })
+
       setInversiones(inversionesData || [])
 
       // Calcular estadísticas
@@ -391,9 +399,13 @@ const Inversiones = () => {
                       </div>
                     </div>
                     <div className="table-cell">
-                      <span className={`type-badge ${inversion.tipo_inversion.toLowerCase()}`}>
-                        {inversion.tipo_inversion === "Capital" ? "Dueño Único" : "Accionista"}
-                      </span>
+                      {inversion.tipo_inversion ? (
+                        <span className={`type-badge ${inversion.tipo_inversion.toLowerCase()}`}>
+                          {inversion.tipo_inversion === "Capital" ? "Dueño Único" : "Accionista"}
+                        </span>
+                      ) : (
+                        <span className="type-badge capital">No especificado</span>
+                      )}
                     </div>
                     <div className="table-cell">
                       <span className="monto-value">${Number(inversion.monto_invertido).toLocaleString("es-CO")}</span>
@@ -404,9 +416,13 @@ const Inversiones = () => {
                       </span>
                     </div>
                     <div className="table-cell">
-                      <span className={`estado-badge ${inversion.proyectos?.estado.toLowerCase().replace(/ /g, "-")}`}>
-                        {inversion.proyectos?.estado}
-                      </span>
+                      {inversion.proyectos?.estado ? (
+                        <span className={`estado-badge ${inversion.proyectos.estado.toLowerCase().replace(/ /g, "-")}`}>
+                          {inversion.proyectos.estado}
+                        </span>
+                      ) : (
+                        <span className="estado-badge buscando-inversion">Sin estado</span>
+                      )}
                     </div>
                     <div className="table-cell">
                       <button
