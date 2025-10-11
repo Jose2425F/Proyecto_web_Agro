@@ -188,7 +188,7 @@ const Crear_Proyectos = () => {
           "¡Tu proyecto ha sido creado y publicado con éxito! Te estamos redirigiendo.",
       });
   
-      setTimeout(() => navigate(`/projects/${projectId}`), 1200);
+      setTimeout(() => navigate(`/mis-proyectos`), 1200);
     } catch (error) {
       console.error("Fallo de proceso:", error);
   

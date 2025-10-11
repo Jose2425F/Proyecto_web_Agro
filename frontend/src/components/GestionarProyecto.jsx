@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from 'react-router-dom';
 import "./GestionarProyecto.css";
 import DescriptionAlerts from "./DescriptionAlerts";
+import RoleSelectionModal from "./RoleSelectionModal";
 
 
 
@@ -11,8 +13,10 @@ const GestionarProyecto = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [alertInfo, setAlertInfo] = useState(null);
+  const [error] = useState(null);
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [alertInfo] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -85,6 +89,25 @@ const GestionarProyecto = () => {
   }
 
 
+
+  const handleDeleteProject = async () => {
+    try {
+      const { error } = await supabase
+        .from("proyectos")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      showAlert("success", "Proyecto Eliminado", "El proyecto se ha eliminado correctamente.");
+      setTimeout(() => {
+        navigate("/projects");
+      }, 2000);
+    } catch (err) {
+      console.error("Error al eliminar proyecto:", err.message);
+      showAlert("error", "Error al Eliminar", "Ocurrió un error al eliminar el proyecto.");
+    }
+  };
 
   // 🔹 Actualizar proyecto
   const handleUpdateProject = async (e) => {
@@ -193,15 +216,16 @@ const GestionarProyecto = () => {
             />
           </div>
   
-          <div className="form-group">
+          {/* <div className="form-group">
             <label>Monto Recaudado:</label>
             <input
               type="number"
               name="monto_recaudado"
               value={formData.monto_recaudado}
               onChange={handleInputChange}
+              disabled={true}
             />
-          </div>
+          </div> */}
   
           <div className="form-group">
             <label>Meta:</label>
@@ -256,6 +280,18 @@ const GestionarProyecto = () => {
           <button type="submit" className="btn-update" disabled={loading}>
             {loading ? "Actualizando..." : "Actualizar Proyecto"}
           </button>
+          <button type="button" className="btn-delete" onClick={() => setShowModal(true)} disabled={loading}>
+            {loading ? "Eliminando proyecto..." : "Eliminar Proyecto"}
+          </button>
+          {showModal && (
+        <RoleSelectionModal
+          onConfirm={() => {
+            setShowModal(false);
+            handleDeleteProject();
+          }}
+          onClose={() => setShowModal(false)}
+        />
+      )}
         </div>
       </form>
   

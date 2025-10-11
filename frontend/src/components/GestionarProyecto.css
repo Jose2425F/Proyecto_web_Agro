@@ -114,6 +114,19 @@ textarea:focus {
   transition: background-color 0.3s;
 }
 
+.btn-delete:hover {
+  background-color: #e60000;
+}
+.btn-delete {
+  background-color: #be0505;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 .btn-update:hover {
   background-color: #14c900;
 }
