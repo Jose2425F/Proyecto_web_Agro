@@ -29,6 +29,8 @@ const InvertirProyecto = () => {
     details: null,
   })
 
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+
   const [formData, setFormData] = useState({
     tipoInversion: "",
     monto: "",
@@ -44,7 +46,7 @@ const InvertirProyecto = () => {
 
     // === COLORES MINIMALISTAS 2026 ===
     const colors = {
-      primary: "#059669",
+      primary: "#14c900",
       dark: "#1E293B",
       gray: "#64748B",
       lightGray: "#E2E8F0",
@@ -149,7 +151,7 @@ const InvertirProyecto = () => {
     addField("Estado", "Confirmada", 115, y + 25)
 
     // === MONTO DESTACADO ===
-    y = cardY + 80
+    y = cardY + 85
 
     doc.setDrawColor(colors.lightGray)
     doc.setLineWidth(0.3)
@@ -201,11 +203,11 @@ const InvertirProyecto = () => {
     doc.setFont("helvetica", "italic")
     doc.setFontSize(9)
     doc.setTextColor(colors.gray)
-    doc.text("Firma del Inversionista", 50, y + 6, { align: "center" })
+    doc.text("Firma del Inversionista", 50, y + 3, { align: "center" })
 
     doc.setFont("helvetica", "normal")
-    doc.setFontSize(8)
-    doc.text(comprobante.nombreUsuario, 50, y + 12, { align: "center" })
+    doc.setFontSize(8.5)
+    doc.text(comprobante.nombreUsuario, 50, y - 1, { align: "center" })
 
     // Código de verificación
     doc.setFont("helvetica", "bold")
@@ -240,10 +242,28 @@ const InvertirProyecto = () => {
     const storedUserId = localStorage.getItem("userId")
     if (storedUserId) {
       setUserId(storedUserId)
+      setIsUserLoggedIn(true)
     } else {
       setLoading(false)
+      setIsUserLoggedIn(false)
     }
   }, [setUserId])
+
+  useEffect(() => {
+    if (!loading && !isUserLoggedIn && project) {
+      setModalConfig({
+        isOpen: true,
+        type: "info",
+        title: "Inicia Sesión para Invertir",
+        message: "Debes iniciar sesión para poder realizar inversiones en este proyecto.",
+        details: (
+          <>
+            <p>Por favor, inicia sesión o regístrate para continuar.</p>
+          </>
+        ),
+      })
+    }
+  }, [loading, isUserLoggedIn, project])
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -475,6 +495,15 @@ const InvertirProyecto = () => {
         </button>
       </div>
     )
+
+  if (!project) {
+    return (
+      <div className="invertir-loading">
+        <div className="spinner"></div>
+        <p>Cargando proyecto...</p>
+      </div>
+    )
+  }
 
   const montoMinimo =
     formData.tipoInversion === "dueno_unico"
@@ -934,7 +963,12 @@ const InvertirProyecto = () => {
         title={modalConfig.title}
         message={modalConfig.message}
         details={modalConfig.details}
-        onConfirm={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={() => {
+          setModalConfig({ ...modalConfig, isOpen: false })
+          if (!isUserLoggedIn) {
+            navigate("/login")
+          }
+        }}
         confirmText="Aceptar"
       />
     </div>
