@@ -309,7 +309,7 @@ const Inversiones = () => {
 
                       <button
                         className="btn-view-project"
-                        onClick={() => navigate(`/invertir/${inversion.id_proyecto}`)}
+                        onClick={() => navigate(`/projects/${inversion.id_proyecto}`)}
                       >
                         Ver Detalles
                         <svg
