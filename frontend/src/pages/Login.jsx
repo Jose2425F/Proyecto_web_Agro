@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import AlertModal from "../components/AlertModal";
 import { GoogleLogin } from "@react-oauth/google";
 import { useUser } from "../hooks/useUser.js";
+import {jwtDecode} from "jwt-decode";
 
 const Login = () => {
   const { setUserId } = useUser();
@@ -47,81 +48,184 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
+  if (!validateForm()) {
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error de Validación",
+      message: "Por favor, completa los campos requeridos.",
+    });
+    return;
+  }
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: formData.CorreoElectronico,
+      password: formData.ContrasenaUser,
+    });
+
+    if (authError) {
+      if (authError.message.includes("Invalid login credentials")) {
+        setAlertModal({
+          isOpen: true,
+          type: "warning",
+          title: "Usuario no encontrado",
+          message: "No existe una cuenta con este correo o la contraseña es incorrecta.",
+        });
+        return;
+      }
+      throw authError;
+    }
+
+    if (!authData.user) {
+      throw new Error("No se pudo iniciar sesión. El objeto de usuario es nulo.");
+    }
+
+    // 🔹 Obtener información adicional del perfil
+    const { data: userProfile, error: profileError } = await supabase
+      .from("usuarios")
+      .select("id, nombre, apellido, cuenta_estado")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (profileError) throw profileError;
+
+    // 🔹 Validar estado de la cuenta
+    if (userProfile.cuenta_estado !== "activa") {
+      await supabase.auth.signOut();
       setAlertModal({
         isOpen: true,
         type: "error",
-        title: "Error de Validación",
-        message: "Por favor, completa los campos requeridos.",
+        title: "Acceso Denegado",
+        message: "Tu cuenta no está activa. Contacta con soporte.",
       });
       return;
     }
 
-    try {
-      const { data: user, error } = await supabase
-        .from("usuarios")
-        .select("id, nombre, apellido, cuenta_estado")
-        .eq("correo", formData.CorreoElectronico)
-        .eq("password", formData.ContrasenaUser)
-        .maybeSingle();
+    // 🔹 Guardar sesión local
+    setUserId(userProfile.id);
+    localStorage.setItem("userId", userProfile.id);
 
-      if (error) throw error;
+    // 🔹 Mostrar modal de bienvenida
+    setAlertModal({
+      isOpen: true,
+      type: "success",
+      title: `¡Bienvenido ${userProfile.nombre} ${userProfile.apellido}! 👋`,
+      message: "Has iniciado sesión correctamente.",
+    });
 
-      if (!user) {
-        setAlertModal({
-          isOpen: true,
-          type: "warning",
-          title: "Advertencia",
-          message: "Correo o contraseña incorrectos.",
-        });
-        return;
-      }
-
-      if (user.cuenta_estado !== "activa") {
-        setAlertModal({
-          isOpen: true,
-          type: "error",
-          title: "Acceso Denegado",
-          message: "Tu cuenta no está activa. Contacta con soporte.",
-        });
-        return;
-      }
-
-      // 🔹 Guardar sesión
-      setUserId(user.id);
-      localStorage.setItem("userId", user.id);
-
-      // 🔹 Mostrar modal de bienvenida
+  } catch (error) {
+    // 🔹 Manejar correo no confirmado
+    if (error.message.includes("Email not confirmed")) {
       setAlertModal({
         isOpen: true,
-        type: "success",
-        title: `Bienvenido ${user.nombre} ${user.apellido}!👋`,
-        message: `Has iniciado sesión correctamente.`,
+        type: "warning",
+        title: "Correo no confirmado",
+        message: "Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada o carpeta de spam.",
       });
-    } catch (error) {
+      return;
+    }
+
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error al Iniciar Sesión",
+      message: `Ocurrió un error al intentar iniciar sesión: ${error.message}`,
+    });
+  }
+};
+ 
+
+const handleGoogleSuccess = async (credentialResponse) => {
+
+  try {
+    const { credential } = credentialResponse;
+
+    if (!credential) {
       setAlertModal({
         isOpen: true,
         type: "error",
         title: "Error",
-        message: `Error al iniciar sesión: ${error.message}`,
+        message: "No se recibió la credencial de Google.",
       });
+      return;
     }
-  };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const { credential } = credentialResponse;
-    console.log("Google Credential:", credential);
+    // 🔹 Decodificar JWT de Google
+    const decoded = jwtDecode(credential);
+    const googleEmail = decoded.email;
+    const _googleName = decoded.name;
 
+    // 🔹 Verificar si el usuario existe en la tabla usuarios
+    const { data: existingUser, error: checkError } = await supabase
+      .from("usuarios")
+      .select("id, nombre, apellido, cuenta_estado")
+      .eq("correo", googleEmail)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      // PGRST116: no se encontraron filas, lo cual es esperado
+      throw checkError;
+    }
+
+    if (!existingUser) {
+      setAlertModal({
+        isOpen: true,
+        type: "warning",
+        title: "Usuario no registrado",
+        message:
+          "No tienes una cuenta registrada. Por favor, regístrate primero.",
+        onClose: () => navigate("/register"),
+      });
+      return;
+    }
+
+    // 🔹 Validar estado de la cuenta
+    if (existingUser.cuenta_estado !== "activa") {
+      setAlertModal({
+        isOpen: true,
+        type: "error",
+        title: "Acceso Denegado",
+        message: "Tu cuenta no está activa. Contacta con soporte.",
+      });
+      return;
+    }
+
+    // 🔹 Iniciar sesión con Google OAuth en Supabase
+    const { data: _authData, error: authError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/home",
+      },
+    });
+
+    if (authError) throw authError;
+
+    // 🔹 Guardar sesión local
+    setUserId(existingUser.id);
+    localStorage.setItem("userId", existingUser.id);
+
+    // 🔹 Mostrar modal de bienvenida
     setAlertModal({
       isOpen: true,
-      type: "info",
-      title: "Atención",
-      message: "Funcionalidad en desarrollo.",
+      type: "success",
+      title: `¡Bienvenido ${existingUser.nombre} ${existingUser.apellido}! 👋`,
+      message: "Has iniciado sesión correctamente.",
     });
-  };
+  } catch (error) {
+    console.error("Google login error:", error);
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error al iniciar sesión con Google",
+      message: "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    });
+  }
+};
+
 
   return (
     <div className="form-container_impuest">

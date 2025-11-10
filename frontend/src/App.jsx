@@ -12,6 +12,7 @@ import CrearProyectos from './pages/Crear_Proyectos';
 import AdminPanel from './pages/AdminPanel';
 import GestionarProyecto from './components/GestionarProyecto';
 import Inversiones from './pages/Inversiones';
+import EditarProyecto from './components/EditarProyecto';
 
 import './App.css';
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/mis-proyectos" element={<MisProyectos />} />
           <Route path="/crear-proyecto" element={<CrearProyectos />} />
+          <Route path="/editar-proyecto/:id" element={<EditarProyecto />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/gestionar/:id" element={<GestionarProyecto />} />
           <Route path="/invertir/:id" element={<InvertirProyecto />} />

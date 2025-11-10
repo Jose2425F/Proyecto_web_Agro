@@ -27,30 +27,40 @@ const Projects = () => {
   }, [projects, searchTerm, filterEstado, sortBy])
 
   const fetchProjects = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from("proyectos")
-        .select(`
-          *,
-          usuarios:id_usuario (
-            nombre,
-            apellido,
-            foto_perfil
-          )
-        `)
-        .order("fecha_creacion", { ascending: false })
+  try {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from("proyectos")
+      .select(`
+        *,
+        usuarios:id_usuario (
+          nombre,
+          apellido,
+          foto_perfil
+        ),
+        likes_proyecto!left (
+          id_usuario
+        )
+      `)
+      .order("fecha_creacion", { ascending: false })
 
-      if (error) throw error
+    if (error) throw error
 
-      setProjects(data || [])
-      calculateStats(data || [])
-    } catch (error) {
-      console.error("Error al cargar proyectos:", error)
-    } finally {
-      setLoading(false)
-    }
+    // 💡 Agregar conteo de likes
+    const projectsWithLikes = (data || []).map(p => ({
+      ...p,
+      likes_count: p.likes_proyecto ? p.likes_proyecto.length : 0
+    }))
+    
+    setProjects(projectsWithLikes)
+    calculateStats(projectsWithLikes)
+  } catch (error) {
+    console.error("Error al cargar proyectos:", error)
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const calculateStats = (projectsData) => {
     const total = projectsData.length

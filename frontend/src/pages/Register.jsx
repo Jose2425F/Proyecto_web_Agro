@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { supabase } from "../supabaseClient";
+import { jwtDecode } from "jwt-decode"
 import AlertModal from "../components/AlertModal";
+import RoleSelectionModal from "../components/RoleSelectionModal"
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ const Register = () => {
   });
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [showRoleSelection, setShowRoleSelection] = useState(false)
+  const [googleData, setGoogleData] = useState(null)
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
     type: "info",
@@ -77,104 +81,252 @@ const Register = () => {
   };
 
   // 🧠 Registro del usuario
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
+  if (!validateForm()) {
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error de Validación",
+      message: "Por favor, corrige los errores en el formulario.",
+    });
+    return;
+  }
+
+  try {
+    // 🔹 Verificar si el usuario ya existe en la tabla usuarios
+    const { data: existingUser, error: checkError } = await supabase
+      .from("usuarios")
+      .select("id, cuenta_estado")
+      .eq("correo", formData.CorreoElectronico)
+      .maybeSingle();
+
+    if (checkError) {
+      console.warn("Error al verificar existencia:", checkError);
+    }
+
+    if (existingUser) {
       setAlertModal({
         isOpen: true,
-        type: "error",
-        title: "Error de Validación",
-        message: "Por favor, corrige los errores en el formulario.",
+        type: "warning",
+        title: "Usuario ya registrado",
+        message:
+          "Ya existe una cuenta con este correo. Si no la has confirmado, revisa tu bandeja de entrada o carpeta de spam.",
       });
       return;
     }
 
-    try {
-      const { data: userData, error: insertError } = await supabase
-        .from("usuarios")
-        .insert([
-          {
-            nombre: formData.Nombre,
-            apellido: formData.Apellido,
-            correo: formData.CorreoElectronico,
-            password: formData.ContrasenaUser,
-            rol: formData.Tipo_usuario,
-            foto_perfil: null,
-          },
-        ])
-        .select();
+    // 🔹 Registrar usuario en Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: formData.CorreoElectronico,
+      password: formData.ContrasenaUser,
+    });
 
-      if (insertError) {
-        if (insertError.message.includes("usuarios_correo_key")) {
+    if (authError) {
+      if (authError.message.includes("already registered")) {
+        setAlertModal({
+          isOpen: true,
+          type: "warning",
+          title: "Correo no confirmado",
+          message:
+            "Este correo ya fue registrado pero no está confirmado. Revisa tu bandeja de entrada o carpeta de spam para activarlo.",
+        });
+        return;
+      }
+      throw authError;
+    }
+
+    const userId = authData?.user?.id || crypto.randomUUID();
+
+    // 🔹 Subida opcional de foto de perfil
+    let photoUrl = null;
+    if (photo) {
+      const fileExt = photo.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = fileName;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, photo);
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+      photoUrl = publicData.publicUrl;
+    }
+
+    // 🔹 Validar rol
+    const rolValido = ["inversionista", "campesino"].includes(
+      formData.Tipo_usuario.toLowerCase()
+    )
+      ? formData.Tipo_usuario.toLowerCase()
+      : "campesino";
+
+    // 🔹 Insertar usuario en la tabla `usuarios`
+    const { error: insertError } = await supabase.from("usuarios").insert([
+      {
+        id: userId,
+        nombre: formData.Nombre,
+        apellido: formData.Apellido,
+        correo: formData.CorreoElectronico,
+        rol: rolValido,
+        foto_perfil: photoUrl,
+      },
+    ]);
+    if (insertError) throw insertError;
+
+    // 🔹 Modal de éxito
+    setAlertModal({
+      isOpen: true,
+      type: "success",
+      title: "Registro Exitoso",
+      message:
+        "Tu cuenta ha sido creada correctamente. Revisa tu correo para confirmar antes de iniciar sesión.",
+    });
+  } catch (error) {
+    console.error("❌ Error al registrar usuario:", error);
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error en el Registro",
+      message:
+        error.message ||
+        "Ocurrió un error al registrar tu cuenta. Intenta nuevamente.",
+    });
+  }
+};
+
+
+const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    const { credential } = credentialResponse;
+
+    if (!credential) {
+      throw new Error("No se recibió la credencial de Google");
+    }
+
+    // 🔹 Decodificar JWT de Google
+    const decoded = jwtDecode(credential);
+
+    // 🔹 Guardar los datos relevantes en estado
+    setGoogleData({
+      email: decoded.email,
+      name: decoded.name || decoded.given_name || "",
+      given_name: decoded.given_name || "",
+      family_name: decoded.family_name || "",
+      picture: decoded.picture || "",
+      credential: credential,
+    });
+
+    // 🔹 Mostrar selección de rol
+    setShowRoleSelection(true);
+  } catch (error) {
+    console.error("Error decodificando Google credential:", error);
+    setAlertModal({
+      isOpen: true,
+      type: "error",
+      title: "Error",
+      message:
+        "No pudimos procesar tu registro con Google. Por favor, intenta nuevamente.",
+    });
+  }
+};
+
+const handleRoleSelection = async (role) => {
+    if (!googleData) return
+
+    try {
+
+      const { data: existingUser, error: checkError } = await supabase
+        .from("usuarios")
+        .select("id, cuenta_estado")
+        .eq("correo", googleData.email)
+        .maybeSingle()
+
+      if (checkError) {
+        console.warn("Error al verificar el usuario existente:", checkError)
+      }
+
+      if (existingUser) {
+        setAlertModal({
+          isOpen: true,
+          type: "warning",
+          title: "Usuario ya registrado",
+          message: "Ya existe una cuenta con este correo. Por favor, inicia sesión.",
+        })
+        setShowRoleSelection(false)
+        setGoogleData(null)
+        return
+      }
+
+      const randomPassword = Math.random().toString(36).slice(-12)
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: googleData.email,
+        password: randomPassword,
+        options: {
+          data: {
+            provider: "google",
+          },
+        },
+      })
+
+      if (authError) {
+        if (authError.message.includes("already registered")) {
           setAlertModal({
             isOpen: true,
-            type: "error",
-            title: "Error",
-            message: "Ya existe un usuario con ese correo.",
-          });
-          return;
+            type: "warning",
+            title: "Correo ya registrado",
+            message: "Este correo ya está asociado a una cuenta. Por favor, inicia sesión.",
+          })
+          setShowRoleSelection(false)
+          setGoogleData(null)
+          return
         }
-        throw insertError;
+        throw authError
       }
 
-      const userId = userData[0].id;
-      let photoUrl = null;
+      const userId = authData?.user?.id || crypto.randomUUID()
 
-      if (photo) {
-        const fileExt = photo.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = fileName;
+      const photoUrl = googleData.picture || null
 
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, photo);
+      const { error: insertError } = await supabase.from("usuarios").insert([
+        {
+          id: userId,
+          nombre: googleData.given_name || googleData.name.split(" ")[0],
+          apellido: googleData.family_name || googleData.name.split(" ")[1] || "",
+          correo: googleData.email,
+          rol: role.toLowerCase(),
+          foto_perfil: photoUrl,
+          cuenta_estado: "activa",
+        },
+      ])
 
-        if (uploadError) throw uploadError;
-
-        const { data: publicData } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(filePath);
-
-        photoUrl = publicData.publicUrl;
-
-        const { error: updateError } = await supabase
-          .from("usuarios")
-          .update({ foto_perfil: photoUrl })
-          .eq("id", userId);
-
-        if (updateError) throw updateError;
-      }
+      if (insertError) throw insertError
 
       setAlertModal({
         isOpen: true,
         type: "success",
-        title: "Registro Exitoso",
-        message: "Tu cuenta ha sido creada correctamente.",
-      });
+        title: "¡Registro Exitoso! 🎉",
+        message: `Tu cuenta ha sido creada como ${role === "inversionista" ? "inversionista" : "campesino"}. Ahora puedes iniciar sesión.`,
+      })
+
+      setShowRoleSelection(false)
+      setGoogleData(null)
     } catch (error) {
-      console.error("Error al registrar:", error);
+      console.error("Error en el registro de Google:", error)
       setAlertModal({
         isOpen: true,
         type: "error",
-        title: "Error",
-        message: error.message.includes("usuarios_correo_key")
-          ? "Ya existe un usuario con ese correo."
-          : "Ocurrió un error al registrar el usuario.",
-      });
+        title: "Error en el Registro",
+        message: error.message || "Ocurrió un error al completar tu registro con Google. Intenta nuevamente.",
+      })
+      setShowRoleSelection(false)
+      setGoogleData(null)
     }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const { credential } = credentialResponse;
-    console.log("Google Credential:", credential);
-    setAlertModal({
-      isOpen: true,
-      type: "info",
-      title: "Atención",
-      message: "Funcionalidad en desarrollo.",
-    });
-  };
+  }
 
   return (
     <div className="form-container_impuest">
@@ -375,7 +527,15 @@ const Register = () => {
         </div>
       </form>
 
-      {/* 🔹 Modal de alerta */}
+      <RoleSelectionModal
+        isOpen={showRoleSelection}
+        googleData={googleData}
+        onSelectRole={handleRoleSelection}
+        onCancel={() => {
+          setShowRoleSelection(false)
+          setGoogleData(null)
+        }}
+      />
       <AlertModal
         isOpen={alertModal.isOpen}
         type={alertModal.type}

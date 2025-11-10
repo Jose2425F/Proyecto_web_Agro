@@ -20,6 +20,9 @@ const MisProyectos = () => {
   const [filtro, setFiltro] = useState("todos")
   const [vistaActual, setVistaActual] = useState("dashboard")
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [proyectoAEliminar, setProyectoAEliminar] = useState(null)
+  const [eliminando, setEliminando] = useState(false)
 
   useEffect(() => {
     if (userId) {
@@ -91,6 +94,36 @@ const MisProyectos = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleEliminarProyecto = async () => {
+    if (!proyectoAEliminar) return
+
+    try {
+      setEliminando(true)
+      const { error } = await supabase.from("proyectos").delete().eq("id", proyectoAEliminar.id)
+
+      if (error) throw error
+
+      // Actualizar la lista de proyectos
+      setProyectos(proyectos.filter((p) => p.id !== proyectoAEliminar.id))
+      setShowDeleteModal(false)
+      setProyectoAEliminar(null)
+    } catch (error) {
+      console.error("Error al eliminar proyecto:", error)
+      alert("Error al eliminar el proyecto")
+    } finally {
+      setEliminando(false)
+    }
+  }
+
+  const handleEditarProyecto = (proyecto) => {
+    navigate(`/editar-proyecto/${proyecto.id}`, { state: { proyecto } })
+  }
+
+  const abrirModalEliminar = (proyecto) => {
+    setProyectoAEliminar(proyecto)
+    setShowDeleteModal(true)
   }
 
   const proyectosFiltrados = proyectos.filter((proyecto) => {
@@ -340,25 +373,44 @@ const MisProyectos = () => {
                             </svg>
                             {inversionesProyecto.length} inversiones
                           </span>
-                          <button
-                            className="btn-view-project"
-                            onClick={() => {
-                              setProyectoSeleccionado(proyecto)
-                              setVistaActual("inversiones")
-                            }}
-                          >
-                            Ver Detalles
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
+                          <div className="project-card-actions">
+                            <button
+                              className="btn-card-action edit"
+                              onClick={() => handleEditarProyecto(proyecto)}
+                              title="Editar proyecto"
                             >
-                              <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                          </button>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8z" />
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              className="btn-card-action delete"
+                              onClick={() => abrirModalEliminar(proyecto)}
+                              title="Eliminar proyecto"
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -466,13 +518,14 @@ const MisProyectos = () => {
                       <div className="table-cell">
                         <span className="inversiones-count-small">{inversionesProyecto.length}</span>
                       </div>
-                      <div className="table-cell">
+                      <div className="table-cell table-actions">
                         <button
                           className="btn-table-action"
                           onClick={() => {
                             setProyectoSeleccionado(proyecto)
                             setVistaActual("inversiones")
                           }}
+                          title="Ver detalles"
                         >
                           <svg
                             width="16"
@@ -484,6 +537,42 @@ const MisProyectos = () => {
                           >
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                             <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                        <button
+                          className="btn-table-action edit"
+                          onClick={() => handleEditarProyecto(proyecto)}
+                          title="Editar proyecto"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          className="btn-table-action delete"
+                          onClick={() => abrirModalEliminar(proyecto)}
+                          title="Eliminar proyecto"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
                           </svg>
                         </button>
                       </div>
@@ -613,6 +702,26 @@ const MisProyectos = () => {
           </>
         )}
       </div>
+
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>¿Eliminar proyecto?</h2>
+            <p>
+              ¿Estás seguro de que deseas eliminar el proyecto "{proyectoAEliminar?.nombre}"? Esta acción no se puede
+              deshacer.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-modal-cancel" onClick={() => setShowDeleteModal(false)} disabled={eliminando}>
+                Cancelar
+              </button>
+              <button className="btn-modal-delete" onClick={handleEliminarProyecto} disabled={eliminando}>
+                {eliminando ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

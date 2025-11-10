@@ -12,116 +12,148 @@ const DetalleProyecto = () => {
   const [inversiones, setInversiones] = useState([])
   const [loading, setLoading] = useState(true)
   const [liked, setLiked] = useState(false)
+  const [likesCount, setLikesCount] = useState(0)
 
-  useEffect(() => {
-    if (id) {
-      fetchProyecto()
-      fetchInversiones()
-    }
-  }, [id])
+useEffect(() => {
+  if (!id) return;
+  let isMounted = true;
 
-  const fetchProyecto = async () => {
+  const loadAllData = async () => {
     try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from("proyectos")
-        .select(`
-          *,
-          usuarios:id_usuario (
-            nombre,
-            apellido,
-            foto_perfil,
-            correo
-          )
-        `)
-        .eq("id", id)
-        .single()
+      setLoading(true);
 
-      if (error) throw error
-      setProyecto(data)
+      // 🔹 Ejecutar todas las queries en paralelo
+      const [proyectoRes, inversionesRes, likesRes, userLikeRes] = await Promise.all([
+        supabase
+          .from("proyectos")
+          .select(`
+            *,
+            usuarios:id_usuario (
+              nombre,
+              apellido,
+              foto_perfil,
+              correo
+            )
+          `)
+          .eq("id", id)
+          .single(),
+
+        supabase
+          .from("inversiones")
+          .select(`
+            *,
+            usuarios:id_inversor (
+              nombre,
+              apellido,
+              foto_perfil
+            )
+          `)
+          .eq("id_proyecto", id)
+          .order("fecha_inversion", { ascending: false }),
+
+        supabase
+          .from("likes_proyecto")
+          .select("*", { count: "exact", head: true })
+          .eq("id_proyecto", id),
+
+        userId
+          ? supabase
+              .from("likes_proyecto")
+              .select("*")
+              .eq("id_proyecto", id)
+              .eq("id_usuario", userId)
+              .single()
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+
+      if (!isMounted) return;
+
+      if (proyectoRes.error) console.error("Error al cargar proyecto:", proyectoRes.error);
+      if (inversionesRes.error) console.error("Error al cargar inversiones:", inversionesRes.error);
+      if (likesRes.error) console.error("Error al cargar likes:", likesRes.error);
+      if (userLikeRes.error) console.error("Error al verificar like del usuario:", userLikeRes.error);
+
+      setProyecto(proyectoRes.data);
+      setInversiones(inversionesRes.data || []);
+      setLikesCount(likesRes.count || 0);
+      setLiked(!!userLikeRes.data);
     } catch (error) {
-      console.error("Error al cargar proyecto:", error)
+      console.error("Error cargando datos del proyecto:", error);
+      if (isMounted) setProyecto(null);
     } finally {
-      setLoading(false)
+      if (isMounted) setLoading(false);
     }
+  };
+
+  loadAllData();
+
+  return () => {
+    isMounted = false;
+  };
+}, [id, userId, supabase]);
+
+const handleLike = async () => {
+  if (!userId) {
+    navigate("/login");
+    return;
   }
 
-  const fetchInversiones = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("inversiones")
-        .select(`
-          *,
-          usuarios:id_inversor (
-            nombre,
-            apellido,
-            foto_perfil
-          )
-        `)
+  try {
+    if (liked) {
+      const { error } = await supabase
+        .from("likes_proyecto")
+        .delete()
         .eq("id_proyecto", id)
-        .order("fecha_inversion", { ascending: false })
+        .eq("id_usuario", userId);
+      if (error) throw error;
 
-      if (error) throw error
-      setInversiones(data || [])
-    } catch (error) {
-      console.error("Error al cargar inversiones:", error)
+      setLikesCount((prev) => prev - 1);
+      setLikesCount(likesCount - 1)
+    } else {
+      const { error } = await supabase
+        .from("likes_proyecto")
+        .insert([{ id_proyecto: id, id_usuario: userId }]);
+      if (error) throw error;
+
+      setLikesCount((prev) => prev + 1);
+      setLikesCount(likesCount + 1)
     }
+
+    setLiked(!liked);
+  } catch (error) {
+    console.error("Error al dar like:", error);
   }
+};
 
-  const handleLike = async () => {
-    if (!userId) {
-      navigate("/login")
-      return
-    }
+const formatMonto = (monto) =>
+  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(monto);
 
-    try {
-      const newLikesCount = (proyecto.likes_count || 0) + (liked ? -1 : 1)
+const calcularProgreso = () => {
+  if (!proyecto) return 0;
+  return ((proyecto.monto_recaudado / proyecto.costos) * 100).toFixed(1);
+};
 
-      const { error } = await supabase.from("proyectos").update({ likes_count: newLikesCount }).eq("id", id)
+if (loading) {
+  return (
+    <div className="detalle-loading">
+      <div className="spinner"></div>
+      <p>Cargando proyecto...</p>
+    </div>
+  );
+}
 
-      if (error) throw error
+if (!proyecto) {
+  return (
+    <div className="detalle-error">
+      <h2>Proyecto no encontrado</h2>
+      <button onClick={() => navigate("/projects")}>Volver a Proyectos</button>
+    </div>
+  );
+}
 
-      setProyecto({ ...proyecto, likes_count: newLikesCount })
-      setLiked(!liked)
-    } catch (error) {
-      console.error("Error al dar like:", error)
-    }
-  }
-
-  const formatMonto = (monto) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(monto)
-  }
-
-  const calcularProgreso = () => {
-    if (!proyecto) return 0
-    return ((proyecto.monto_recaudado / proyecto.costos) * 100).toFixed(1)
-  }
-
-  if (loading) {
-    return (
-      <div className="detalle-loading">
-        <div className="spinner"></div>
-        <p>Cargando proyecto...</p>
-      </div>
-    )
-  }
-
-  if (!proyecto) {
-    return (
-      <div className="detalle-error">
-        <h2>Proyecto no encontrado</h2>
-        <button onClick={() => navigate("/projects")}>Volver a Proyectos</button>
-      </div>
-    )
-  }
-
-  const progreso = calcularProgreso()
-  const montoDisponible = proyecto.costos - proyecto.monto_recaudado
-  const numeroInversores = new Set(inversiones.map((inv) => inv.id_inversor)).size
+const progreso = calcularProgreso();
+const montoDisponible = proyecto.costos - proyecto.monto_recaudado;
+const numeroInversores = new Set(inversiones.map((inv) => inv.id_inversor)).size;
 
   return (
     <div className="detalle-proyecto-container">
@@ -169,7 +201,7 @@ const DetalleProyecto = () => {
                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                 />
               </svg>
-              <span>{proyecto.likes_count || 0}</span>
+              <span>{likesCount || 0}</span>
             </button>
           </div>
         </div>

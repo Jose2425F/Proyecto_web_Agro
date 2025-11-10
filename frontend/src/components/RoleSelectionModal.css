@@ -1,78 +1,158 @@
-.modal-overlay {
+.role-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  text-align: center;
-  width: 90%;
+.role-modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 32px;
   max-width: 400px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-.modal-content h2 {
-  margin-top: 0;
-  font-size: 1.5rem;
+.role-modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.role-modal-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
   color: #333;
 }
 
-.modal-content p {
-  margin-bottom: 25px;
+.role-modal-header p {
+  font-size: 14px;
   color: #666;
+  margin: 0;
 }
 
-.modal-actions {
+.role-modal-user-info {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.role-modal-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border: 2px solid #f0f0f0;
+}
+
+.role-modal-name {
+  font-weight: 600;
+  margin: 8px 0 4px 0;
+  color: #333;
+}
+
+.role-modal-email {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+.role-modal-actions {
   display: flex;
-  justify-content: space-around;
-  gap: 15px;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.modal-actions button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 5px;
+.role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background-color 0.3s, transform 0.2s;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.modal-actions button:first-child {
-  background-color: #14c900;
-  color: white;
-}
-
-.modal-actions button:last-child {
-  background-color: #14c900;
-  color: white;
-}
-
-.modal-actions button:hover {
+.role-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.close-button {
-  background: transparent;
-  border: none;
-  color: #888;
+.role-btn-campesino {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.role-btn-campesino:hover {
+  background-color: #f1f8f4;
+  border-color: #388e3c;
+}
+
+.role-btn-campesino:active {
+  background-color: #e8f5e9;
+}
+
+.role-btn-inversionista {
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+.role-btn-inversionista:hover {
+  background-color: #f3f8fd;
+  border-color: #1976d2;
+}
+
+.role-btn-inversionista:active {
+  background-color: #e3f2fd;
+}
+
+.role-icon {
+  font-size: 20px;
+}
+
+.role-label {
+  text-transform: capitalize;
+}
+
+.role-modal-cancel {
+  width: 100%;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #666;
+  font-size: 14px;
   cursor: pointer;
-  font-size: 0.9rem;
-  text-decoration: underline;
+  transition: all 0.3s ease;
 }
 
-.close-button:hover {
-  background: #c70202;
-  color: white;
+.role-modal-cancel:hover {
+  background-color: #e8e8e8;
+  border-color: #d0d0d0;
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
