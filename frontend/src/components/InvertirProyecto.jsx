@@ -63,7 +63,7 @@ const InvertirProyecto = () => {
     doc.rect(0, 0, pageWidth, 2, "F")
 
     // Logo
-    const logoURL = "https://lzgmqtmnstiykakpmxfa.supabase.co/storage/v1/object/public/avatars/logo/logo.png"
+    const logoURL = "https://eavbcqqsayutikbzhejp.supabase.co/storage/v1/object/public/avatars/logo/Logo.png"
     doc.addImage(logoURL, "PNG", 20, 15, 25, 25)
     
     // Empresa

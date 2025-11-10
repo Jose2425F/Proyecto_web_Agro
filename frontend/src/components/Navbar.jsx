@@ -63,7 +63,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-logo">
         <Link to="/home" onClick={() => setMenuOpen(false)}>
-          <img src="https://lzgmqtmnstiykakpmxfa.supabase.co/storage/v1/object/public/avatars/logo/logo.png" alt="Logo" className="logo" />
+          <img src="https://eavbcqqsayutikbzhejp.supabase.co/storage/v1/object/public/avatars/logo/Logo.png" alt="Logo" className="logo" />
           AgroColombia
         </Link>
       </div>
