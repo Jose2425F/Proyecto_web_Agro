@@ -1,100 +1,94 @@
-# AgroColombia Connect 🌱
+# Proyecto Web Agro
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+Plataforma web para la visualización e inversión en proyectos agrícolas. Los usuarios pueden registrarse, explorar diferentes proyectos, ver detalles y decidir si invertir.
 
-AgroColombia Connect es una plataforma web moderna diseñada para conectar a agricultores colombianos con inversionistas interesados en financiar proyectos agrícolas. La plataforma, construida con React y Supabase, busca fomentar el desarrollo del sector agrícola en Colombia de una manera ágil y escalable.
+## ✨ Características Principales
 
-## 🚀 Características Principales
+- **Exploración de Proyectos:** Visualiza una lista de proyectos agrícolas disponibles.
+- **Detalles del Proyecto:** Accede a información detallada de cada proyecto, incluyendo descripción, metas de financiamiento y rentabilidad.
+- **Gestión de Inversiones:** Los usuarios pueden invertir en los proyectos de su interés.
+- **Autenticación y Perfiles:** Sistema de registro e inicio de sesión para usuarios.
 
-- **Roles de Usuario:**
-    - **Campesino:** Puede crear y gestionar sus proyectos agrícolas.
-    - **Inversionista:** Puede explorar proyectos y realizar inversiones.
-    - **Administrador:** Puede supervisar la plataforma, gestionar usuarios y proyectos.
-- **Gestión de Proyectos:**
-    - Creación de proyectos con detalles completos (nombre, descripción, costos, etc.).
-    - Galería de proyectos con filtros y búsqueda.
-    - Seguimiento del estado de los proyectos (`Buscando Inversión`, `En Progreso`, `Completado`).
-- **Sistema de Inversión:**
-    - Los inversionistas pueden financiar proyectos de forma segura.
-    - Visualización del progreso de la recaudación en tiempo real.
-- **Autenticación Moderna:**
-    - Registro e inicio de sesión de usuarios.
-    - Integración con proveedores OAuth como Google.
+## ቴክ Tecnologías Utilizadas
 
-## 🛠️ Tecnologías Utilizadas
+- **Frontend:** React, Vite
+- **Backend:** Supabase (Base de Datos PostgreSQL, Autenticación, APIs)
+- **Estilos:** CSS plano
 
-- **Frontend:**
-    - **React:** Biblioteca para construir interfaces de usuario.
-    - **Vite:** Entorno de desarrollo y empaquetador ultra rápido.
-    - **React Router:** Para la gestión de rutas en la aplicación.
-    - **Material-UI:** Componentes de UI para un diseño atractivo y consistente.
-- **Backend & Base de Datos:**
-    - **Supabase:** Plataforma open-source que provee base de datos PostgreSQL, autenticación, APIs y más.
-- **Herramientas de Desarrollo:**
-    - **ESLint:** Para mantener la calidad y consistencia del código.
+## 📂 Estructura del Repositorio
 
-## ⚙️ Guía de Instalación y Configuración
+```
+/
+├── frontend/         # Código fuente de la aplicación React
+│   ├── src/
+│   └── ...
+├── sql/              # Scripts de base de datos
+│   └── create.sql
+└── README.md         # Este archivo
+```
 
-Sigue estos pasos para tener una copia del proyecto funcionando en tu máquina local.
+## 🚀 Configuración y Puesta en Marcha
 
-### **Requisitos Previos**
+Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
+
+### Requisitos Previos
 
 - [Node.js](https://nodejs.org/) (versión 18.x o superior)
-- [npm](https://www.npmjs.com/) (generalmente se instala con Node.js)
+- [npm](https://www.npmjs.com/)
+- Una cuenta gratuita en [Supabase](https://supabase.com/)
 
-### **1. Clonar el Repositorio**
+### Pasos de Instalación
 
-```bash
-git clone https://github.com/Jose2425F/Proyecto_web_Agro.git
-cd Proyecto_web_Agro/frontend
-```
-
-### **2. Instalar Dependencias**
-
-Dentro de la carpeta `frontend`, ejecuta el siguiente comando para instalar todas las dependencias del proyecto:
-
-```bash
-npm install
-```
-
-### **3. Configurar Variables de Entorno**
-
-Este proyecto se conecta a Supabase para el backend. Necesitarás crear un archivo `.env` en la raíz de la carpeta `frontend`.
-
-1.  Crea un archivo llamado `.env` en el directorio `frontend`.
-2.  Añade las siguientes variables con tus credenciales de Supabase:
-
-    ```env
-    VITE_SUPABASE_URL="TU_URL_DE_SUPABASE"
-    VITE_SUPABASE_ANON_KEY="TU_ANON_KEY_DE_SUPABASE"
+1.  **Clona el repositorio:**
+    ```bash
+    git clone <URL_DEL_REPOSITORIO>
+    cd Proyecto_web_Agro
     ```
 
-    Puedes obtener estas credenciales en el panel de tu proyecto de Supabase, en la sección `Settings` > `API`.
+2.  **Navega al directorio del frontend e instala las dependencias:**
+    ```bash
+    cd frontend
+    npm install
+    ```
 
-### **4. Configurar la Base de Datos**
+3.  **Configura Supabase:**
+    - Ve a [supabase.com](https://supabase.com/) y crea un nuevo proyecto.
+    - En la configuración de tu proyecto de Supabase, ve a la sección de **Settings > API**.
+    - Necesitarás la **URL del Proyecto** y la **clave `anon` pública**.
 
-El proyecto utiliza una base de datos PostgreSQL gestionada por Supabase.
+4.  **Crea el archivo de entorno:**
+    - En el directorio `frontend`, crea un archivo llamado `.env`.
+    - Añade las siguientes variables con los valores de tu proyecto de Supabase:
+      ```
+      VITE_SUPABASE_URL="TU_URL_DE_SUPABASE"
+      VITE_SUPABASE_ANON_KEY="TU_CLAVE_ANON_PUBLICA"
+      ```
+    > **Nota:** El archivo `.env` está correctamente ignorado por Git para proteger tus claves.
 
-1.  Ve al `SQL Editor` en tu panel de Supabase.
-2.  Copia el contenido del archivo `sql/create.sql` que se encuentra en la raíz de este repositorio.
-3.  Pega el script en el editor SQL y ejecútalo para crear las tablas necesarias. El script está listo para usarse directamente con PostgreSQL.
+5.  **Configura la base de datos:**
+    - En el panel de tu proyecto de Supabase, ve al **SQL Editor**.
+    - Copia el contenido del archivo `sql/create.sql` que se encuentra en este repositorio.
+    - Pega el contenido en el editor de SQL y ejecútalo para crear las tablas y la estructura necesaria.
 
-### **5. Ejecutar el Proyecto**
+## 🔒 Autenticación y Manejo de JWT
 
-Una vez completada la configuración, puedes iniciar el servidor de desarrollo:
+La autenticación en este proyecto se maneja a través de Supabase Auth, que utiliza **JSON Web Tokens (JWT)** para asegurar las sesiones de los usuarios. El flujo es el siguiente:
 
-```bash
-npm run dev
-```
+1.  **Inicio de Sesión:** Cuando un usuario inicia sesión, la aplicación envía las credenciales al servicio de autenticación de Supabase (`GoTrue`).
+2.  **Emisión del JWT:** Si las credenciales son válidas, Supabase genera un `access_token` (JWT) y un `refresh_token`. Este JWT contiene información del usuario (como su ID) y está firmado digitalmente por Supabase.
+3.  **Almacenamiento:** La librería cliente de Supabase (`@supabase/supabase-js`) se encarga de almacenar de forma segura este token en el `localStorage` del navegador.
+4.  **Autorización de API:** Para cada solicitud posterior a la base de datos (por ejemplo, para obtener la lista de proyectos), la librería cliente adjunta automáticamente el JWT en la cabecera `Authorization` de la petición.
+5.  **Validación en el Backend:** El backend de Supabase (específicamente `PostgREST`) valida la firma del JWT en cada solicitud. Si el token es válido, extrae el ID del usuario y lo utiliza para aplicar las **Políticas de Seguridad a Nivel de Fila (RLS)** que definimos en `sql/create.sql`. Esto garantiza que un usuario solo pueda ver o modificar los datos a los que tiene permiso.
+6.  **Refresco de Sesión:** El `refresh_token` se utiliza para obtener un nuevo `access_token` cuando el actual expira, manteniendo la sesión del usuario activa sin necesidad de volver a iniciar sesión.
 
-¡Abre tu navegador y visita `http://localhost:5173` (o el puerto que indique Vite) para ver la aplicación en funcionamiento!
+Este mecanismo asegura que la comunicación entre el frontend y la base de datos de Supabase sea segura y que los usuarios solo puedan acceder a sus propios datos.
 
-## 📜 Scripts Disponibles
+### Ejecución
 
-- `npm run dev`: Inicia el servidor de desarrollo con Vite.
-- `npm run build`: Compila la aplicación para producción.
-- `npm run lint`: Ejecuta el linter (ESLint) para analizar el código.
-- `npm run preview`: Sirve localmente el build de producción.
+1.  **Inicia el servidor de desarrollo de Vite:**
+    - Asegúrate de estar en el directorio `frontend`.
+    ```bash
+    npm run dev
+    ```
+
+2.  Abre tu navegador y visita `http://localhost:5173` (o la URL que indique la terminal).
