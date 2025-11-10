@@ -454,8 +454,6 @@ const InvertirProyecto = () => {
         throw updateError
       }
 
-      console.log("[v0] ✅ Inversión registrada y monto_recaudado actualizado correctamente")
-
       setProject({ ...project, monto_recaudado: nuevoMontoRecaudado })
 
       setComprobante({

@@ -58,9 +58,8 @@ const Inversiones = () => {
 
       if (inversionesError) throw inversionesError
 
-      console.log("[v0] Inversiones data:", inversionesData)
       inversionesData?.forEach((inv) => {
-        console.log("[v0] Inversión:", {
+        console.log(" Inversión:", {
           id: inv.id,
           tipo_inversion: inv.tipo_inversion,
           estado: inv.proyectos?.estado,
