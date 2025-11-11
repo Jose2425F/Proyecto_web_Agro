@@ -13,6 +13,7 @@ import AdminPanel from './pages/AdminPanel';
 import GestionarProyecto from './components/GestionarProyecto';
 import Inversiones from './pages/Inversiones';
 import EditarProyecto from './components/EditarProyecto';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import './App.css';
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<DetalleProyecto />} />
+          <Route element={<ProtectedRoute />}>
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/mis-proyectos" element={<MisProyectos />} />
           <Route path="/crear-proyecto" element={<CrearProyectos />} />
@@ -35,6 +37,7 @@ function App() {
           <Route path="/gestionar/:id" element={<GestionarProyecto />} />
           <Route path="/invertir/:id" element={<InvertirProyecto />} />
           <Route path="/inversiones" element={<Inversiones />} />
+          </Route>
         </Route>
       </Routes>
     </Router>
