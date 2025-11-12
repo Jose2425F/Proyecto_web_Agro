@@ -1,55 +1,44 @@
--- Tabla: usuarios
+-- Tabla de usuarios
 CREATE TABLE usuarios (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre TEXT NOT NULL,
     apellido TEXT NOT NULL,
     correo TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    rol TEXT NOT NULL,
+    rol TEXT,
     foto_perfil TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    cuenta_estado TEXT NOT NULL
+    created_at TIMESTAMP DEFAULT NOW(),
+    cuenta_estado TEXT DEFAULT 'activo'
 );
 
--- Tabla: proyectos
+-- Tabla de proyectos
 CREATE TABLE proyectos (
-    id BIGINT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     nombre TEXT NOT NULL,
     descripcion TEXT,
-    costos NUMERIC NOT NULL,
+    costos NUMERIC,
     monto_recaudado NUMERIC DEFAULT 0,
     produccion_estimada NUMERIC,
-    estado TEXT NOT NULL, -- Reemplazar con ENUM si aplica
-    id_usuario UUID NOT NULL,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    imagen_url VARCHAR,
-    likes_count INT DEFAULT 0,
-    
-    -- Llave foránea hacia usuarios
-    CONSTRAINT fk_proyecto_usuario
-        FOREIGN KEY (id_usuario) 
-        REFERENCES usuarios(id)
-        ON DELETE CASCADE
+    estado TEXT DEFAULT 'pendiente',
+    id_usuario UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    fecha_creacion TIMESTAMP DEFAULT NOW(),
+    imagen_url VARCHAR
 );
 
--- Tabla: inversiones
+-- Tabla de inversiones
 CREATE TABLE inversiones (
-    id UUID PRIMARY KEY,
-    id_proyecto BIGINT NOT NULL,
-    id_inversor UUID NOT NULL,
-    tipo_inversion TEXT NOT NULL, -- Reemplazar con ENUM si aplica
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_proyecto BIGINT REFERENCES proyectos(id) ON DELETE CASCADE,
+    id_inversor UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    tipo_inversion TEXT,
     monto_invertido NUMERIC NOT NULL,
-    fecha_inversion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    fecha_inversion TIMESTAMPTZ DEFAULT NOW()
+);
 
-    -- Llave foránea hacia proyectos
-    CONSTRAINT fk_inversion_proyecto
-        FOREIGN KEY (id_proyecto)
-        REFERENCES proyectos(id)
-        ON DELETE CASCADE,
-
-    -- Llave foránea hacia usuarios (inversor)
-    CONSTRAINT fk_inversion_inversor
-        FOREIGN KEY (id_inversor)
-        REFERENCES usuarios(id)
-        ON DELETE CASCADE
+-- Tabla de likes_proyecto
+CREATE TABLE likes_proyecto (
+    id BIGSERIAL PRIMARY KEY,
+    id_proyecto BIGINT REFERENCES proyectos(id) ON DELETE CASCADE,
+    id_usuario UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    fecha_like TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (id_proyecto, id_usuario) -- Evita likes duplicados
 );
