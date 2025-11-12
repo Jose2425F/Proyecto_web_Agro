@@ -7,7 +7,7 @@ import { useUser } from "../hooks/useUser.js";
 import {jwtDecode} from "jwt-decode";
 
 const Login = () => {
-  const { setUserId } = useUser();
+  const { setUserId,setRole} = useUser();
   const [formData, setFormData] = useState({
     CorreoElectronico: "",
     ContrasenaUser: "",
@@ -87,7 +87,7 @@ const handleSubmit = async (e) => {
     // 🔹 Obtener información adicional del perfil
     const { data: userProfile, error: profileError } = await supabase
       .from("usuarios")
-      .select("id, nombre, apellido, cuenta_estado")
+      .select("id, nombre, apellido, rol, cuenta_estado")
       .eq("id", authData.user.id)
       .single();
 
@@ -107,6 +107,8 @@ const handleSubmit = async (e) => {
 
     // 🔹 Guardar sesión local
     setUserId(userProfile.id);
+    setRole(userProfile.role);
+    localStorage.setItem("role", userProfile.role);
     localStorage.setItem("userId", userProfile.id);
 
     // 🔹 Mostrar modal de bienvenida
@@ -162,7 +164,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
     // 🔹 Verificar si el usuario existe en la tabla usuarios
     const { data: existingUser, error: checkError } = await supabase
       .from("usuarios")
-      .select("id, nombre, apellido, cuenta_estado")
+      .select("id, nombre, apellido, rol, cuenta_estado")
       .eq("correo", googleEmail)
       .single();
 
@@ -206,6 +208,8 @@ const handleGoogleSuccess = async (credentialResponse) => {
 
     // 🔹 Guardar sesión local
     setUserId(existingUser.id);
+    setRole(existingUser.rol);
+    localStorage.setItem("role", existingUser.rol);
     localStorage.setItem("userId", existingUser.id);
 
     // 🔹 Mostrar modal de bienvenida

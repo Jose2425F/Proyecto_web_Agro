@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "a8c1b9c7-2e9f-4b3e-8b9a-3c2d1e0f6d4a",
+		"name": "Agro Web API - Supabase",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"strong-password-123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{supabase_url}}/auth/v1/signup",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"signup"
+							]
+						},
+						"description": "Crea un nuevo usuario en la tabla `auth.users` de Supabase."
+					},
+					"response": []
+				},
+				{
+					"name": "Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.environment.set(\"jwt_token\", pm.response.json().access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"strong-password-123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{supabase_url}}/auth/v1/token?grant_type=password",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							],
+							"query": [
+								{
+									"key": "grant_type",
+									"value": "password"
+								}
+							]
+						},
+						"description": "Inicia sesión con un usuario existente para obtener un JWT access_token. El token se guarda automáticamente en la variable de entorno `jwt_token`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Proyectos",
+			"item": [
+				{
+					"name": "Get All Proyectos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/proyectos?select=*",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"proyectos"
+							],
+							"query": [
+								{
+									"key": "select",
+									"value": "*"
+								}
+							]
+						},
+						"description": "Obtiene una lista de todos los proyectos. Requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Proyecto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Prefer",
+								"value": "return=representation",
+								"description": "Pide a Supabase que devuelva el objeto creado en la respuesta."
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Mi Nuevo Proyecto de Café\",\n    \"descripcion\": \"Cultivo de café de alta calidad en las montañas.\",\n    \"costos\": 50000,\n    \"produccion_estimada\": 1000,\n    \"estado\": \"planificacion\",\n    \"id_usuario\": \"TU_USER_ID_AQUI\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/proyectos",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"proyectos"
+							]
+						},
+						"description": "Crea un nuevo proyecto. **IMPORTANTE**: Debes reemplazar `TU_USER_ID_AQUI` con el ID del usuario autenticado. Puedes obtenerlo de la respuesta de Sign In."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Proyecto",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"descripcion\": \"Descripción actualizada del proyecto.\",\n    \"estado\": \"activo\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/proyectos?id=eq.1",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"proyectos"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "eq.1"
+								}
+							]
+						},
+						"description": "Actualiza un proyecto existente. Cambia el `1` en la URL por el ID del proyecto que deseas modificar."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Proyecto",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/proyectos?id=eq.1",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"proyectos"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "eq.1"
+								}
+							]
+						},
+						"description": "Elimina un proyecto existente. Cambia el `1` en la URL por el ID del proyecto que deseas eliminar."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inversiones",
+			"item": [
+				{
+					"name": "Create Inversion",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Prefer",
+								"value": "return=representation"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_proyecto\": 1,\n    \"id_inversor\": \"TU_USER_ID_AQUI\",\n    \"tipo_inversion\": \"participacion\",\n    \"monto_invertido\": 500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/inversiones",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"inversiones"
+							]
+						},
+						"description": "Crea una nueva inversión. **IMPORTANTE**: Debes reemplazar `TU_USER_ID_AQUI` con el ID del inversor y asegurarte de que `id_proyecto` exista."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inversiones de un Proyecto",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "apikey",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{supabase_url}}/rest/v1/inversiones?id_proyecto=eq.1&select=*",
+							"host": [
+								"{{supabase_url}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"inversiones"
+							],
+							"query": [
+								{
+									"key": "id_proyecto",
+									"value": "eq.1"
+								},
+								{
+									"key": "select",
+									"value": "*"
+								}
+							]
+						},
+						"description": "Obtiene todas las inversiones asociadas a un proyecto específico. Cambia el `1` en la URL por el ID del proyecto que te interesa."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "supabase_url",
+			"value": "https://YOUR_SUPABASE_URL.supabase.co",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "YOUR_SUPABASE_ANON_KEY",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

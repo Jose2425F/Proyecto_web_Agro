@@ -28,15 +28,19 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<DetalleProyecto />} />
-          <Route element={<ProtectedRoute />}>
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/mis-proyectos" element={<MisProyectos />} />
-          <Route path="/crear-proyecto" element={<CrearProyectos />} />
-          <Route path="/editar-proyecto/:id" element={<EditarProyecto />} />
-          <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/gestionar/:id" element={<GestionarProyecto />} />
-          <Route path="/invertir/:id" element={<InvertirProyecto />} />
-          <Route path="/inversiones" element={<Inversiones />} />
+            <Route path="/perfil" element={<Perfil />} />
+          <Route element={<ProtectedRoute allowedRoles={["campesino"]} />}>
+            <Route path="/mis-proyectos" element={<MisProyectos />} />
+            <Route path="/crear-proyecto" element={<CrearProyectos />} />
+            <Route path="/editar-proyecto/:id" element={<EditarProyecto />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["inversionista"]} />}>
+            <Route path="/gestionar/:id" element={<GestionarProyecto />} />
+            <Route path="/invertir/:id" element={<InvertirProyecto />} />
+            <Route path="/inversiones" element={<Inversiones />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin-panel" element={<AdminPanel />} />
           </Route>
         </Route>
       </Routes>

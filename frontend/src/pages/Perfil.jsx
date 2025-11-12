@@ -171,7 +171,7 @@ const Perfil = () => {
             imagen_url,
             estado
           ),
-          usuarios!inversiones_id_inversor_fkey (
+          usuarios:fk_inversion_inversor (
             nombre,
             apellido,
             foto_perfil

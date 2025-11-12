@@ -9,7 +9,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId="349373813363-rhm40kno3osc03tb8shlnovmrr7s7kqv.apps.googleusercontent.com">
       <UserProvider>
-      <App />
+        <App />
       </UserProvider>
     </GoogleOAuthProvider>
   </StrictMode>
