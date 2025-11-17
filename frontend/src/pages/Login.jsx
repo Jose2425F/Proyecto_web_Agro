@@ -105,10 +105,10 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    // 🔹 Guardar sesión local
+    // 🔹 Guardar sesión local (usar campo 'rol' de la tabla)
     setUserId(userProfile.id);
-    setRole(userProfile.role);
-    localStorage.setItem("role", userProfile.role);
+    setRole(userProfile.rol);
+    localStorage.setItem("role", userProfile.rol);
     localStorage.setItem("userId", userProfile.id);
 
     // 🔹 Mostrar modal de bienvenida
@@ -195,24 +195,11 @@ const handleGoogleSuccess = async (credentialResponse) => {
       });
       return;
     }
-
-    // 🔹 Iniciar sesión con Google OAuth en Supabase
-    const { data: _authData, error: authError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/home",
-      },
-    });
-
-    if (authError) throw authError;
-
-    // 🔹 Guardar sesión local
     setUserId(existingUser.id);
     setRole(existingUser.rol);
     localStorage.setItem("role", existingUser.rol);
     localStorage.setItem("userId", existingUser.id);
 
-    // 🔹 Mostrar modal de bienvenida
     setAlertModal({
       isOpen: true,
       type: "success",

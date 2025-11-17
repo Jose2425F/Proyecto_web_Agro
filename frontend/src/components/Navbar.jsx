@@ -50,13 +50,30 @@ const Navbar = () => {
   }, [userId]);
 
   const handleLogout = () => {
-    setUserId(null); 
-    localStorage.removeItem("userId"); 
-    setIsLoggedIn(false);
-    setUserRole(null);
-    setUserName("");
-    setProfilePic("");
-    navigate("/");
+    const doLogout = async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('Error al cerrar sesión en Supabase:', err.message || err);
+      }
+
+      setUserId(null);
+      localStorage.removeItem("userId");
+      localStorage.removeItem("role");
+      setIsLoggedIn(false);
+      setUserRole(null);
+      setUserName("");
+      setProfilePic("");
+      navigate("/");
+     // Asegurarse de que se elimine cualquier sesión obsoleta en el cliente
+      try {
+        window.location.reload();
+      } catch (e) {
+        console.error("Error al recargar la página:", e);
+      }
+    };
+
+    doLogout();
   };
 
   return (

@@ -39,7 +39,7 @@ function App() {
             <Route path="/invertir/:id" element={<InvertirProyecto />} />
             <Route path="/inversiones" element={<Inversiones />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["administrador","administradorsupremo"]} />}>
             <Route path="/admin-panel" element={<AdminPanel />} />
           </Route>
         </Route>

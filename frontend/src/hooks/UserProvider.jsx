@@ -42,6 +42,45 @@ export const UserProvider = ({ children }) => {
     };
 
     initializeUser();
+
+    // Suscríbete a los cambios de estado de autenticación para que la interfaz de usuario reaccione cuando se cierre la sesión en otro lugar.
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUserId(null);
+        setRole(null);
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+      }
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        const id = session.user.id;
+        (async () => {
+          try {
+            const { data: userProfile } = await supabase
+              .from('usuarios')
+              .select('rol')
+              .eq('id', id)
+              .single();
+            if (userProfile) {
+              setUserId(id);
+              setRole(userProfile.rol);
+              localStorage.setItem('userId', id);
+              localStorage.setItem('role', userProfile.rol);
+            }
+          } catch (e) {
+            console.error('Error fetching profile on SIGNED_IN:', e.message || e);
+          }
+        })();
+      }
+    });
+
+    return () => {
+      if (listener && typeof listener.subscription?.unsubscribe === 'function') {
+        listener.subscription.unsubscribe();
+      } else if (listener && typeof listener.unsubscribe === 'function') {
+        listener.unsubscribe();
+      }
+    };
   }, []);
   if (loading) return <p>Cargando sesión...</p>;
 
