@@ -77,10 +77,11 @@ Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
 
 4.  **Crea el archivo de entorno:**
     -   En el directorio `frontend`, crea un archivo llamado `.env`.
-    -   Añade las siguientes variables con los valores de tu proyecto de Supabase:
+    -   Añade las siguientes variables con los valores de tu proyecto de Supabase y OAuth de Google:
         ```
         VITE_SUPABASE_URL="TU_URL_DE_SUPABASE"
         VITE_SUPABASE_ANON_KEY="TU_CLAVE_ANON_PUBLICA"
+        VITE_GOOGLE_CLIENT_ID="TU_CLIENT_ID_DE_GOOGLE.apps.googleusercontent.com"
         ```
     > **Nota:** El archivo `.env` está correctamente ignorado por Git para proteger tus claves.
 
@@ -115,6 +116,22 @@ La base de datos en PostgreSQL está estructurada con las siguientes tablas prin
     -   `id_proyecto` (BIGINT): Referencia al proyecto invertido.
     -   `id_inversor` (UUID): Referencia al usuario (inversor) que realizó la inversión.
     -   `monto_invertido`.
+
+-   **`likes_proyecto`**: Registra los likes que los usuarios dan a proyectos.
+    -   `id` (BIGSERIAL): Identificador del registro de like.
+    -   `id_proyecto` (BIGINT): Referencia al proyecto (clave foránea a `proyectos.id`).
+    -   `id_usuario` (UUID): Referencia al usuario que dio el like (clave foránea a `usuarios.id`).
+    -   `fecha_like` (TIMESTAMPTZ): Fecha y hora en que se registró el like.
+    -   `UNIQUE (id_proyecto, id_usuario)` — restricción para evitar likes duplicados por el mismo usuario.
+
+-   Campos adicionales en el esquema:
+    -   `usuarios.cuenta_estado` (TEXT, default 'activo') — estado de la cuenta del usuario.
+    -   `proyectos.produccion_estimada` (NUMERIC) — estimación de producción del proyecto.
+    -   `proyectos.fecha_creacion` (TIMESTAMP) — fecha de creación del proyecto.
+    -   `proyectos.imagen_url` (VARCHAR) — URL de la imagen asociada al proyecto.
+    -   `inversiones.tipo_inversion` (TEXT) — tipo/etiqueta de la inversión.
+    -   `inversiones.fecha_inversion` (TIMESTAMPTZ) — timestamp registrado de la inversión.
+
 
 ## 🔒 Autenticación y Manejo de JWT
 
