@@ -1,15 +1,18 @@
 .perfil-container {
   min-height: 100vh;
-  background: #1a1a1a;
+  background: #111;
+  color: #f5f5f5;
+  font-family: "Poppins", sans-serif;
   padding-bottom: 4rem;
 }
 
 /* Header del perfil */
 .perfil-header {
   position: relative;
-  background:  #0c7b00;
-  padding: 2rem 0 4rem;
-  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #0c7b00 0%, #0a5200 100%);
+  padding: 2.5rem 0 4rem;
+  margin-bottom: 2.5rem;
+  overflow: hidden;
 }
 
 .header-background {
@@ -28,7 +31,10 @@
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .btn-back-perfil {
@@ -57,7 +63,7 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  margin-bottom: 3rem;
+  flex-wrap: wrap;
 }
 
 .avatar-container {
@@ -139,19 +145,21 @@
 /* Estadísticas rápidas */
 .stats-quick {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
 }
 
 .stat-quick-card {
-  background: rgba(42, 42, 42, 0.8);
+  background: rgba(30, 30, 30, 0.9);
   backdrop-filter: blur(10px);
-  border: 1px solid #616161;
+  border: 1px solid #2f2f2f;
   border-radius: 16px;
-  padding: 1.5rem;
-  display: flex;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 1rem;
+  column-gap: 1rem;
+  row-gap: 0.35rem;
   transition: all 0.3s ease;
 }
 
@@ -162,19 +170,20 @@
 }
 
 .stat-quick-card .stat-icon {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
+  line-height: 1;
 }
 
 .stat-quick-card .stat-content {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
 .stat-quick-card .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #f0f0f0;
-  margin-bottom: 0.25rem;
 }
 
 .stat-quick-card .stat-label {
@@ -185,27 +194,38 @@
 /* Pestañas */
 .perfil-tabs {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  margin: 0 auto 2rem;
+  padding: 0 clamp(1rem, 4vw, 3rem);
   display: flex;
   gap: 1rem;
-  border-bottom: 2px solid #616161;
-  margin-bottom: 2rem;
+  border-bottom: 2px solid #2f2f2f;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.perfil-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.perfil-tabs::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 999px;
 }
 
 .tab {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem 1.5rem;
+  padding: 0.9rem 1.25rem;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
-  color: #aaa;
-  font-size: 1rem;
+  color: #c0c0c0;
+  font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  scroll-snap-align: start;
 }
 
 .tab:hover {
@@ -225,7 +245,7 @@
 .perfil-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 clamp(1rem, 4vw, 3rem);
 }
 
 .tab-content {
@@ -245,16 +265,16 @@
 
 .content-grid-perfil {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
 .perfil-card {
-  background: #2a2a2a;
+  background: #1e1e1e;
   border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid #616161;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border: 1px solid #2f2f2f;
 }
 
 .card-header {
@@ -412,8 +432,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #616161;
+  border-bottom: 1px solid #2f2f2f;
 }
 
 .info-row:last-child {
@@ -421,21 +442,24 @@
 }
 
 .info-label {
-  font-size: 0.9rem;
-  color: #aaa;
+  font-size: 0.85rem;
+  color: #9d9d9d;
   font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .info-value {
   font-size: 1rem;
-  color: #f0f0f0;
+  color: #fff;
   font-weight: 600;
 }
 
 /* Estadísticas detalladas */
 .stats-detailed {
   display: grid;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
 }
 
 .stat-detailed-card {
@@ -501,16 +525,16 @@
 /* Grid de inversiones */
 .inversiones-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
 .inversion-card {
-  background: #2a2a2a;
-  border: 1px solid #616161;
+  background: #1e1e1e;
+  border: 1px solid #2f2f2f;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
 }
 
@@ -593,6 +617,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.btn-ver-proyecto svg {
+  margin-right: 0.35rem;
 }
 
 .btn-ver-proyecto:hover {
@@ -830,8 +858,8 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  background: #2a2a2a;
-  border: 1px solid #616161;
+  background: #1e1e1e;
+  border: 1px solid #2f2f2f;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   z-index: 9999;
@@ -933,8 +961,8 @@
   align-items: center;
   gap: 2rem;
   padding: 1.5rem;
-  background: #2a2a2a;
-  border: 1px solid #616161;
+  background: #151515;
+  border: 1px solid #2f2f2f;
   border-radius: 12px;
   margin-bottom: 1.5rem;
 }
@@ -992,10 +1020,37 @@
 }
 
 /* Responsive mejorado */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .perfil-info {
     flex-direction: column;
     text-align: center;
+  }
+
+  .perfil-details h1 {
+    font-size: 1.75rem;
+  }
+
+  .stats-quick {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .content-grid-perfil {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .perfil-header {
+    padding: 2rem 0 3rem;
+  }
+
+  .btn-back-perfil {
+    align-self: flex-start;
   }
 
   .stats-quick {
@@ -1003,8 +1058,7 @@
   }
 
   .perfil-tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
   }
 
   .tab {
@@ -1023,13 +1077,6 @@
     grid-template-columns: 1fr;
   }
 
-  .alert-modern {
-    top: 1rem;
-    right: 1rem;
-    left: 1rem;
-    min-width: auto;
-  }
-
   .photo-upload-section {
     flex-direction: column;
     text-align: center;
@@ -1037,5 +1084,90 @@
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .actividad-timeline {
+    padding-left: 1rem;
+  }
+
+  .timeline-marker {
+    left: -1.35rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .stats-quick {
+    gap: 0.9rem;
+  }
+
+  .perfil-details h1 {
+    font-size: 1.5rem;
+  }
+
+  .badge-rol,
+  .badge-estado {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.85rem;
+  }
+
+  .stat-quick-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 1rem;
+    row-gap: 0.5rem;
+  }
+
+  .stat-quick-card .stat-icon {
+    font-size: 2rem;
+    justify-self: center;
+  }
+
+  .stat-quick-card .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-quick-card .stat-label {
+    font-size: 0.78rem;
+  }
+
+  .inversion-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .btn-ver-proyecto {
+    font-size: 0.95rem;
+  }
+
+  .alert-modern {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .stats-quick {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-back-perfil {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .avatar-image,
+  .photo-preview {
+    width: 96px;
+    height: 96px;
+  }
+
+  .tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .perfil-card {
+    padding: 1.25rem;
   }
 }
