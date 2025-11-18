@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { supabase } from "../supabaseClient"
@@ -7,6 +5,22 @@ import "./InvertirProyecto.css"
 import { useUser } from "../hooks/useUser"
 import jsPDF from "jspdf"
 import AlertModal from "./AlertModal"
+
+const generateClientUUID = () => {
+  if (typeof crypto !== "undefined") {
+    if (crypto.randomUUID) return crypto.randomUUID()
+    if (crypto.getRandomValues) {
+      const bytes = crypto.getRandomValues(new Uint8Array(16))
+      bytes[6] = (bytes[6] & 0x0f) | 0x40
+      bytes[8] = (bytes[8] & 0x3f) | 0x80
+      const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0"))
+      return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex
+        .slice(8, 10)
+        .join("")}-${hex.slice(10, 16).join("")}`
+    }
+  }
+  return `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
 
 const InvertirProyecto = () => {
   const { userId, setUserId } = useUser()
@@ -30,6 +44,8 @@ const InvertirProyecto = () => {
   })
 
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+  const [hasExclusiveOwner, setHasExclusiveOwner] = useState(false)
+  const [exclusiveOwnerId, setExclusiveOwnerId] = useState(null)
 
   const [formData, setFormData] = useState({
     tipoInversion: "",
@@ -38,6 +54,10 @@ const InvertirProyecto = () => {
   })
 
   const [montoFormateado, setMontoFormateado] = useState("")
+  const selectedInvestmentType = formData.tipoInversion
+  const isExclusiveOwner = hasExclusiveOwner && exclusiveOwnerId === userId
+  const ownerLockActive = hasExclusiveOwner && !isExclusiveOwner
+  const formDisabled = ownerLockActive || (userRole && userRole !== "inversionista")
 
   const generarPDF = async (comprobante) => {
     const doc = new jsPDF("p", "mm", "a4")
@@ -89,7 +109,7 @@ const InvertirProyecto = () => {
     doc.line(20, 65, 80, 65)
 
     // Número de comprobante
-    const numeroComprobante = `INV-${Date.now().toString().slice(-8)}`
+    const numeroComprobante = comprobante?.codigo || `INV-${Date.now().toString().slice(-8)}`
     doc.setFont("helvetica", "normal")
     doc.setFontSize(10)
     doc.setTextColor(colors.gray)
@@ -284,6 +304,38 @@ const InvertirProyecto = () => {
     fetchProjectDetails()
   }, [id])
 
+  useEffect(() => {
+    const fetchExclusiveOwner = async () => {
+      if (!id) return
+      try {
+        const { data, error } = await supabase
+          .from("inversiones")
+          .select("id_inversor, fecha_inversion")
+          .eq("id_proyecto", id)
+          .eq("tipo_inversion", "Capital")
+          .order("fecha_inversion", { ascending: true })
+          .limit(1)
+
+        if (error) throw error
+        const ownerRecord = Array.isArray(data) ? data[0] : data
+        setHasExclusiveOwner(Boolean(ownerRecord))
+        setExclusiveOwnerId(ownerRecord?.id_inversor ?? null)
+      } catch (err) {
+        console.error("Error al verificar dueño único:", err.message)
+      }
+    }
+
+    fetchExclusiveOwner()
+  }, [id])
+
+  useEffect(() => {
+    if (!userId) return
+    if (hasExclusiveOwner && exclusiveOwnerId === userId && selectedInvestmentType !== "dueno_unico") {
+      setFormData((prev) => ({ ...prev, tipoInversion: "dueno_unico" }))
+    }
+  }, [hasExclusiveOwner, exclusiveOwnerId, userId, selectedInvestmentType])
+
+
   const formatearMonto = (valor) => {
     const numeroLimpio = valor.replace(/\D/g, "")
 
@@ -332,6 +384,21 @@ const InvertirProyecto = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (ownerLockActive) {
+      setModalConfig({
+        isOpen: true,
+        type: "warning",
+        title: "Proyecto con Dueño Único",
+        message: "Este proyecto ya cuenta con un dueño único que controla la inversión.",
+        details: (
+          <>
+            <p>De momento no es posible realizar nuevas inversiones sobre este proyecto.</p>
+          </>
+        ),
+      })
+      return
+    }
+
     if (userRole !== "inversionista") {
       setModalConfig({
         isOpen: true,
@@ -371,7 +438,12 @@ const InvertirProyecto = () => {
       return
     }
 
-    const minimo = formData.tipoInversion === "dueno_unico" ? project.costos * 0.3 : project.costos * 0.1
+    const minimo =
+      formData.tipoInversion === "dueno_unico"
+        ? isExclusiveOwner
+          ? 0
+          : project.costos * 0.3
+        : project.costos * 0.1
 
     if (montoNum < minimo) {
       setModalConfig({
@@ -418,7 +490,9 @@ const InvertirProyecto = () => {
     }
 
     try {
+      const newInvestmentId = generateClientUUID()
       const { error } = await supabase.from("inversiones").insert({
+        id: newInvestmentId,
         id_proyecto: id,
         id_inversor: userId,
         tipo_inversion: formData.tipoInversion === "dueno_unico" ? "Capital" : "Accionista",
@@ -456,13 +530,22 @@ const InvertirProyecto = () => {
 
       setProject({ ...project, monto_recaudado: nuevoMontoRecaudado })
 
+      const comprobanteCodigo = Math.random().toString(36).substr(2, 9).toUpperCase()
+
+      if (formData.tipoInversion === "dueno_unico") {
+        setHasExclusiveOwner(true)
+        setExclusiveOwnerId(userId)
+      }
+
       setComprobante({
+        codigo: comprobanteCodigo,
         nombreUsuario: userData,
         nombreProyecto: project.nombre,
         tipoInversion: formData.tipoInversion === "dueno_unico" ? "Capital" : "Accionista",
         monto: montoNum,
         fecha: new Date().toLocaleString(),
       })
+
     } catch (err) {
       console.error("Error general:", err)
       setModalConfig({
@@ -503,14 +586,101 @@ const InvertirProyecto = () => {
     )
   }
 
+  const montoDisponible = Math.max(0, project.costos - project.monto_recaudado)
+  const costoTotal = Number(project.costos) || 0
+  const montoRecaudado = Number(project.monto_recaudado) || 0
   const montoMinimo =
     formData.tipoInversion === "dueno_unico"
-      ? project.costos * 0.3
+      ? isExclusiveOwner
+        ? 0
+        : costoTotal * 0.3
       : formData.tipoInversion === "accionista"
-        ? project.costos * 0.1
+        ? costoTotal * 0.1
         : null
+  const minimoDisplay = ownerLockActive
+    ? "Reservado"
+    : montoMinimo === null
+      ? "Selecciona un tipo"
+      : montoMinimo === 0 && isExclusiveOwner
+        ? "Sin mínimo (Dueño Único)"
+        : `$${montoMinimo.toLocaleString("es-CO")}`
+  const minimoHintIsZero = montoMinimo === 0 && isExclusiveOwner
+  const showOwnerSuccessBanner = isExclusiveOwner && hasExclusiveOwner
+  const rawProgress = costoTotal ? (montoRecaudado / costoTotal) * 100 : 0
+  const progressPercent = Number(Math.min(100, Math.max(0, rawProgress)).toFixed(1))
+  const remainingCapital = Math.max(0, costoTotal - montoRecaudado)
+  const fechaCreacion = project.fecha_creacion
+    ? new Date(project.fecha_creacion).toLocaleDateString("es-CO", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "En curso"
+  const produccionEstimada = project.produccion_estimada
+    ? `${Number(project.produccion_estimada).toLocaleString("es-CO")} unidades`
+    : "Por definir"
+  const ticketAccionista = costoTotal * 0.1
+  const ticketDuenoUnico = costoTotal * 0.3
+  const progressTier = progressPercent >= 75 ? "alto" : progressPercent >= 40 ? "medio" : "bajo"
+  const descripcionCorta = project.descripcion?.trim()
+    ? project.descripcion
+    : "Este proyecto impulsa la productividad agrícola con prácticas sostenibles y alianzas con comunidades locales."
 
-  const montoDisponible = project.costos - project.monto_recaudado
+  const fundingSummary = [
+    { label: "Meta total", value: `$${costoTotal.toLocaleString("es-CO")}` },
+    { label: "Recaudado", value: `$${montoRecaudado.toLocaleString("es-CO")}` },
+    { label: "Disponible", value: `$${remainingCapital.toLocaleString("es-CO")}` },
+  ]
+
+  const projectHighlights = [
+    { label: "Producción estimada", value: produccionEstimada },
+    { label: "Estado", value: project.estado || "Por definir" },
+    { label: "Creado", value: fechaCreacion },
+  ]
+
+  const timelineMilestones = [
+    {
+      title: "Proyecto publicado",
+      description: fechaCreacion,
+    },
+    {
+      title: "Capital recaudado",
+      description: `${progressPercent}% del objetivo alcanzado`,
+    },
+    {
+      title: "Próximo hito",
+      description: "Entrega de resultados trimestrales",
+    },
+  ]
+
+  const insightBadges = [
+    {
+      title: "Impacto regional",
+      description: "Apoya a productores locales",
+    },
+    {
+      title: "Seguimiento en vivo",
+      description: "Reportes trimestrales",
+    },
+  ]
+
+  const liquidityHighlights = [
+    {
+      label: "Capital disponible",
+      value: `$${remainingCapital.toLocaleString("es-CO")}`,
+      note: "Aún por financiar",
+    },
+    {
+      label: "Ticket Accionista",
+      value: `$${ticketAccionista.toLocaleString("es-CO")}`,
+      note: "Desde 10% del objetivo",
+    },
+    {
+      label: "Ticket Dueño Único",
+      value: `$${ticketDuenoUnico.toLocaleString("es-CO")}`,
+      note: "30% para control total",
+    },
+  ]
 
   return (
     <div className="invertir-container">
@@ -528,9 +698,25 @@ const InvertirProyecto = () => {
             </svg>
             Volver
           </button>
+          <div className="header-meta">
+            <span className="status-pill">{project.estado}</span>
+            <div className="header-tags">
+              <span>Rentabilidad verde</span>
+              <span>Impacto social</span>
+              <span>Supervisión directa</span>
+            </div>
+          </div>
           <div className="header-text">
             <h1 className="project-title">{project.nombre}</h1>
             <p className="project-subtitle">Inversión en proyecto agrícola sostenible</p>
+          </div>
+          <div className="header-stats">
+            {fundingSummary.map((stat) => (
+              <div className="header-stat" key={stat.label}>
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -539,76 +725,60 @@ const InvertirProyecto = () => {
         <div className="invertir-content">
           <div className="content-grid">
             <div className="left-column">
-              <div className="project-info-card">
-                <div className="info-header">
-                  <div className="info-icon-wrapper">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                      <line x1="12" y1="22.08" x2="12" y2="12" />
-                    </svg>
+              <section className="funding-overview">
+                <div className="radial-panel">
+                  <div
+                    className="radial-chart"
+                    style={{ '--progress-value': `${progressPercent}%` }}
+                    data-tier={progressTier}
+                  >
+                    <div className="radial-inner">
+                      <strong>{progressPercent}%</strong>
+                      <span>Financiado</span>
+                      <small>${montoRecaudado.toLocaleString("es-CO")}</small>
+                    </div>
                   </div>
+                  <div className="radial-details">
+                    <p className="radial-caption">Objetivo total</p>
+                    <h3>${costoTotal.toLocaleString("es-CO")} COP</h3>
+                    <div className="radial-badges">
+                      <span>
+                        <strong>${montoRecaudado.toLocaleString("es-CO")}</strong> recaudado
+                      </span>
+                      <span>
+                        <strong>${remainingCapital.toLocaleString("es-CO")}</strong> disponible
+                      </span>
+                    </div>
+                    <p className="radial-note">Actualizamos el progreso al instante conforme ingresan nuevas inversiones.</p>
+                  </div>
+                </div>
+                <div className="overview-grid-cards">
+                  {liquidityHighlights.map((item) => (
+                    <div className="overview-card" key={item.label}>
+                      <p>{item.label}</p>
+                      <h4>{item.value}</h4>
+                      <span>{item.note}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <div className="project-summary-card">
+                <div className="summary-header">
                   <div>
-                    <h2>Detalles del Proyecto</h2>
-                    <p>Información financiera y estado actual</p>
+                    <p>Visión general</p>
+                    <h3>¿Por qué invertir?</h3>
                   </div>
+                  <span className="summary-chip">Agricultura sostenible</span>
                 </div>
-
-                <div className="info-stats">
-                  <div className="stat-card">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-content">
-                      <span className="stat-label">Costo Total</span>
-                      <span className="stat-value">${project.costos.toLocaleString("es-CO")}</span>
+                <p className="summary-body">{descripcionCorta}</p>
+                <div className="summary-meta">
+                  {projectHighlights.map((item) => (
+                    <div className="summary-item" key={item.label}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
                     </div>
-                  </div>
-
-                  <div className="stat-card success">
-                    <div className="stat-icon">📈</div>
-                    <div className="stat-content">
-                      <span className="stat-label">Recaudado</span>
-                      <span className="stat-value">${project.monto_recaudado.toLocaleString("es-CO")}</span>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-content">
-                      <span className="stat-label">Progreso</span>
-                      <span className="stat-value">
-                        {((project.monto_recaudado / project.costos) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">🎯</div>
-                    <div className="stat-content">
-                      <span className="stat-label">Estado</span>
-                      <span className={`badge badge-${project.estado.toLowerCase().replace(/ /g, "-")}`}>
-                        {project.estado}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="progress-bar-container">
-                  <div className="progress-bar-header">
-                    <span>Progreso de financiación</span>
-                    <span className="progress-percentage">
-                      {((project.monto_recaudado / project.costos) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${(project.monto_recaudado / project.costos) * 100}%` }}
-                    ></div>
-                  </div>
-                  <div className="progress-info">
-                    <span>${project.monto_recaudado.toLocaleString("es-CO")} recaudado</span>
-                    <span>${project.costos.toLocaleString("es-CO")} objetivo</span>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -646,9 +816,45 @@ const InvertirProyecto = () => {
                   </li>
                 </ul>
               </div>
+
+              <div className="timeline-card">
+                <div className="timeline-header">
+                  <div>
+                    <p>Ruta del proyecto</p>
+                    <h3>Línea de avance</h3>
+                  </div>
+                  <span className="timeline-progress">{progressPercent}%</span>
+                </div>
+                <ul className="timeline-list">
+                  {timelineMilestones.map((milestone) => (
+                    <li className="timeline-item" key={milestone.title}>
+                      <div className="timeline-dot"></div>
+                      <div>
+                        <h4>{milestone.title}</h4>
+                        <p>{milestone.description}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="right-column">
+              <div className="insight-banner">
+                <div>
+                  <p>Snapshot del impacto</p>
+                  <h3>Tu inversión acelera el progreso</h3>
+                </div>
+                <div className="insight-badges">
+                  {insightBadges.map((item) => (
+                    <div className="insight-pill" key={item.title}>
+                      <strong>{item.title}</strong>
+                      <span>{item.description}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {userRole && userRole !== "inversionista" && (
                 <div className="role-warning">
                   <div className="warning-icon">⚠️</div>
@@ -665,176 +871,236 @@ const InvertirProyecto = () => {
                 </div>
               )}
 
-              <form className="investment-form-modern" onSubmit={handleSubmit}>
-                <div className="form-header">
-                  <div className="form-icon">💎</div>
-                  <h2>Realizar Inversión</h2>
-                  <p>Selecciona tu tipo de inversión y monto</p>
-                </div>
+              <form className="investment-form-modern" onSubmit={handleSubmit} aria-live="polite">
+                  <div className="form-header">
+                    <div className="form-icon">💎</div>
+                    <h2>Realizar Inversión</h2>
+                    <p>Selecciona tu tipo de inversión y monto</p>
+                  </div>
+                  {ownerLockActive && (
+                    <div className="owner-lock-banner warning" role="status">
+                      <div className="lock-icon">🔒</div>
+                      <div>
+                        <h4>Proyecto reservado</h4>
+                        <p>Este proyecto ya cuenta con un dueño único. No se permiten nuevas inversiones.</p>
+                      </div>
+                    </div>
+                  )}
+                  {showOwnerSuccessBanner && (
+                    <div className="owner-lock-banner success" role="status">
+                      <div className="lock-icon">🌱</div>
+                      <div>
+                        <h4>Sigues siendo el dueño único</h4>
+                        <p>Puedes reinvertir sin monto mínimo cuando puedas.</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="form-pills">
+                    <div className="form-pill">
+                      <span>Capital disponible</span>
+                      <strong>${montoDisponible.toLocaleString("es-CO")}</strong>
+                    </div>
+                    <div className={`form-pill muted ${ownerLockActive ? "locked" : ""}`}>
+                      <span>Mínimo actual</span>
+                      <strong>{minimoDisplay}</strong>
+                    </div>
+                  </div>
+                  <ul className="form-steps">
+                    <li className="active">1. Tipo de inversión</li>
+                    <li>2. Monto</li>
+                    <li>3. Confirmación</li>
+                  </ul>
 
-                <div className="form-group">
-                  <label htmlFor="tipoInversion">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 6v6l4 2" />
-                    </svg>
-                    Tipo de Inversión
-                  </label>
-                  <div className="investment-types">
-                    <label
-                      className={`investment-type-card ${formData.tipoInversion === "dueno_unico" ? "selected" : ""}`}
-                    >
-                      <input
-                        type="radio"
-                        name="tipoInversion"
-                        value="dueno_unico"
-                        checked={formData.tipoInversion === "dueno_unico"}
-                        onChange={handleChange}
-                      />
-                      <div className="type-badge">Premium</div>
-                      <div className="type-content">
-                        <div className="type-icon">👑</div>
-                        <h3>Dueño Único</h3>
-                        <p>Control total del proyecto</p>
+                  <div className="form-group">
+                    <label htmlFor="tipoInversion">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      Tipo de Inversión
+                    </label>
+                    <div className="investment-types">
+                      <label
+                        className={`investment-type-card ${
+                          formData.tipoInversion === "dueno_unico" ? "selected" : ""
+                        } ${ownerLockActive ? "disabled" : ""}`}
+                        aria-disabled={ownerLockActive}
+                      >
+                        <input
+                          type="radio"
+                          name="tipoInversion"
+                          value="dueno_unico"
+                          checked={formData.tipoInversion === "dueno_unico"}
+                          onChange={handleChange}
+                          disabled={formDisabled}
+                        />
+                        <div className="type-badge">Premium</div>
+                        <div className="type-content">
+                          <div className="type-icon">👑</div>
+                          <div>
+                            <h3>Dueño Único</h3>
+                            <p>Control total del proyecto</p>
+                          </div>
+                        </div>
                         <div className="type-details">
                           <span className="type-percentage">30%</span>
                           <span className="type-amount">${(project.costos * 0.3).toLocaleString("es-CO")}</span>
                         </div>
-                      </div>
-                    </label>
+                      </label>
 
-                    <label
-                      className={`investment-type-card ${formData.tipoInversion === "accionista" ? "selected" : ""}`}
-                    >
-                      <input
-                        type="radio"
-                        name="tipoInversion"
-                        value="accionista"
-                        checked={formData.tipoInversion === "accionista"}
-                        onChange={handleChange}
-                      />
-                      <div className="type-badge standard">Estándar</div>
-                      <div className="type-content">
-                        <div className="type-icon">🤝</div>
-                        <h3>Accionista</h3>
-                        <p>Participación compartida</p>
+                      <label
+                        className={`investment-type-card ${
+                          formData.tipoInversion === "accionista" ? "selected" : ""
+                        } ${ownerLockActive ? "disabled" : ""}`}
+                        aria-disabled={ownerLockActive}
+                      >
+                        <input
+                          type="radio"
+                          name="tipoInversion"
+                          value="accionista"
+                          checked={formData.tipoInversion === "accionista"}
+                          onChange={handleChange}
+                          disabled={formDisabled}
+                        />
+                        <div className="type-badge standard">Estándar</div>
+                        <div className="type-content">
+                          <div className="type-icon">🤝</div>
+                          <div>
+                            <h3>Accionista</h3>
+                            <p>Participación compartida</p>
+                          </div>
+                        </div>
                         <div className="type-details">
                           <span className="type-percentage">10%</span>
                           <span className="type-amount">${(project.costos * 0.1).toLocaleString("es-CO")}</span>
                         </div>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="monto">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="12" y1="1" x2="12" y2="23" />
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                    Monto a Invertir
-                  </label>
-                  <div className="input-wrapper">
-                    <span className="input-prefix">$</span>
-                    <input
-                      type="text"
-                      id="monto"
-                      name="monto"
-                      value={montoFormateado}
-                      onChange={handleMontoChange}
-                      placeholder="0"
-                      required
-                    />
-                    <span className="input-suffix">COP</span>
-                  </div>
-                  {montoMinimo && (
-                    <div className="input-hint">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4M12 8h.01" />
-                      </svg>
-                      Monto mínimo: ${montoMinimo.toLocaleString("es-CO")} • Disponible: $
-                      {montoDisponible.toLocaleString("es-CO")}
+                      </label>
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                <div className="form-group">
-                  <div className="terms-section">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="aceptaTerminos"
-                        checked={formData.aceptaTerminos}
-                        onChange={handleChange}
-                      />
-                      <span className="checkbox-custom"></span>
-                      <span>
-                        Acepto los{" "}
-                        <button
-                          type="button"
-                          className="link-button"
-                          onClick={() => setMostrarTerminos(!mostrarTerminos)}
-                        >
-                          términos y condiciones
-                        </button>
-                      </span>
+                  <div className="form-group">
+                    <label htmlFor="monto">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                      Monto a Invertir
                     </label>
-
-                    {mostrarTerminos && (
-                      <div className="terms-content">
-                        <div className="terms-header">
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10 9 9 9 8 9" />
-                          </svg>
-                          <h4>Términos y Condiciones de Inversión</h4>
-                        </div>
-                        <ol className="terms-list">
-                          <li>La inversión no garantiza rendimientos inmediatos.</li>
-                          <li>El capital será administrado por el gestor del proyecto.</li>
-                          <li>No se permiten retiros antes de la fecha pactada.</li>
-                          <li>El inversionista asume riesgos de mercado.</li>
-                          <li>La información financiera será confidencial.</li>
-                          <li>Supabase almacena los datos bajo estándares seguros.</li>
-                          <li>Las ganancias se distribuirán proporcionalmente.</li>
-                          <li>Los impuestos corren por cuenta del inversionista.</li>
-                          <li>El contrato se rige por leyes locales.</li>
-                          <li>La aceptación implica conformidad con todos los puntos.</li>
-                        </ol>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">$</span>
+                      <input
+                        type="text"
+                        id="monto"
+                        name="monto"
+                        value={montoFormateado}
+                        onChange={handleMontoChange}
+                        placeholder="0"
+                        required
+                        disabled={formDisabled}
+                      />
+                      <span className="input-suffix">COP</span>
+                    </div>
+                    {montoMinimo !== null && (
+                      <div className={`input-hint ${minimoHintIsZero ? "success" : ""}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                        {minimoHintIsZero ? (
+                          <span>
+                            Sin monto mínimo activo. Capital pendiente por invertir:{ " "}
+                            {montoDisponible.toLocaleString("es-CO")}.
+                          </span>
+                        ) : (
+                          <span>
+                            Monto mínimo:{" "}
+                            {montoMinimo.toLocaleString("es-CO")} • Disponible:{" "}
+                            {montoDisponible.toLocaleString("es-CO")}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  className="btn-submit"
-                  disabled={!formData.aceptaTerminos || (userRole && userRole !== "inversionista")}
-                >
-                  <span>Confirmar Inversión</span>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
+                  <div className="form-group">
+                    <div className="terms-section">
+                      <div className="terms-checkline">
+                        <label className="checkbox-label">
+                          <input
+                            type="checkbox"
+                            name="aceptaTerminos"
+                            checked={formData.aceptaTerminos}
+                            onChange={handleChange}
+                            disabled={formDisabled}
+                          />
+                          <span className="checkbox-custom"></span>
+                          <div className="terms-copy">
+                            <strong>Acepto los términos y condiciones</strong>
+                            <p>Confirmo que leí el acuerdo del proyecto y asumo los riesgos.</p>
+                          </div>
+                        </label>
+                        <button
+                          type="button"
+                          className="terms-toggle"
+                          onClick={() => setMostrarTerminos(!mostrarTerminos)}
+                        >
+                          {mostrarTerminos ? "Ocultar términos" : "Ver términos"}
+                        </button>
+                      </div>
 
-                <div className="security-badge">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  <span>Transacción segura y encriptada</span>
-                </div>
+                      {mostrarTerminos && (
+                        <div className="terms-content">
+                          <div className="terms-header">
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                              <line x1="16" y1="13" x2="8" y2="13" />
+                              <line x1="16" y1="17" x2="8" y2="17" />
+                              <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                            <h4>Términos y Condiciones de Inversión</h4>
+                          </div>
+                          <ol className="terms-list">
+                            <li>La inversión no garantiza rendimientos inmediatos.</li>
+                            <li>El capital será administrado por el gestor del proyecto.</li>
+                            <li>No se permiten retiros antes de la fecha pactada.</li>
+                            <li>El inversionista asume riesgos de mercado.</li>
+                            <li>La información financiera será confidencial.</li>
+                            <li>Supabase almacena los datos bajo estándares seguros.</li>
+                            <li>Las ganancias se distribuirán proporcionalmente.</li>
+                            <li>Los impuestos corren por cuenta del inversionista.</li>
+                            <li>El contrato se rige por leyes locales.</li>
+                            <li>La aceptación implica conformidad con todos los puntos.</li>
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-submit"
+                    disabled={!formData.aceptaTerminos || (userRole && userRole !== "inversionista")}
+                  >
+                    <span>Confirmar Inversión</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+
+                  <div className="security-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span>Transacción segura y encriptada</span>
+                  </div>
               </form>
             </div>
           </div>
@@ -842,114 +1108,96 @@ const InvertirProyecto = () => {
       ) : (
         <div className="comprobante-overlay">
           <div className="comprobante-modal">
-            <div className="comprobante-header">
-              <div className="success-animation">
-                <div className="success-icon">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+            <div className="comprobante-columns">
+              <div className="comprobante-main">
+                <div className="comprobante-header pop">
+                  <div className="success-animation">
+                    <div className="success-icon">
+                      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                    </div>
+                    <div className="success-particles">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <p className="comprobante-eyebrow">Inversión exitosa</p>
+                  <h2>Tu comprobante está listo</h2>
+                  <p>Tu inversión ha sido registrada correctamente en el sistema.</p>
                 </div>
-                <div className="success-particles">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-              <h2>¡Inversión Exitosa!</h2>
-              <p>Tu inversión ha sido registrada correctamente en el sistema</p>
-            </div>
 
-            <div className="comprobante-card">
-              <div className="comprobante-number">
-                <span>Comprobante N°</span>
-                <strong>{Math.random().toString(36).substr(2, 9).toUpperCase()}</strong>
-              </div>
+                <div className="comprobante-highlight">
+                  <div className="highlight-block">
+                    <span>Comprobante N°</span>
+                    <strong>{comprobante.codigo}</strong>
+                  </div>
+                  <div className="highlight-block accent">
+                    <span>Monto invertido</span>
+                    <strong>${comprobante.monto.toLocaleString("es-CO")}</strong>
+                  </div>
+                </div>
 
-              <div className="comprobante-details">
-                <div className="detail-row">
-                  <span className="detail-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 16V8a2 2 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    Proyecto
-                  </span>
-                  <span className="detail-value">{comprobante.nombreProyecto}</span>
+                <div className="firma-pill">
+                  <p>Firma digital del inversionista</p>
+                  <strong>{comprobante.nombreUsuario}</strong>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
+
+                <div className="comprobante-actions">
+                  <button onClick={() => generarPDF(comprobante)} className="btn-download">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    Inversionista
-                  </span>
-                  <span className="detail-value">{comprobante.nombreUsuario}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 6v6l4 2" />
+                    Descargar PDF
+                  </button>
+                  <button onClick={() => setComprobante(null)} className="btn-new-investment">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 5v14M5 12h14" />
                     </svg>
-                    Tipo de Inversión
-                  </span>
-                  <span className="detail-value">{comprobante.tipoInversion}</span>
-                </div>
-                <div className="detail-row highlight">
-                  <span className="detail-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="12" y1="1" x2="12" y2="23" />
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    Nueva Inversión
+                  </button>
+                  <button onClick={() => navigate("/projects")} className="btn-projects">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                     </svg>
-                    Monto Invertido
-                  </span>
-                  <span className="detail-value">${comprobante.monto.toLocaleString("es-CO")}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    Fecha y Hora
-                  </span>
-                  <span className="detail-value">{comprobante.fecha}</span>
+                    Ver Proyectos
+                  </button>
                 </div>
               </div>
 
-              <div className="firma-section">
-                <p>Firma digital del inversionista</p>
-                <div className="firma-line"></div>
-                <span className="firma-text">{comprobante.nombreUsuario}</span>
+              <div className="comprobante-side">
+                <div className="side-header">
+                  <p>Resumen instantáneo</p>
+                  <h3>Detalles de la transacción</h3>
+                </div>
+                <div className="comprobante-grid">
+                  <div className="grid-item">
+                    <span>Proyecto</span>
+                    <strong>{comprobante.nombreProyecto}</strong>
+                  </div>
+                  <div className="grid-item">
+                    <span>Inversionista</span>
+                    <strong>{comprobante.nombreUsuario}</strong>
+                  </div>
+                  <div className="grid-item">
+                    <span>Tipo de inversión</span>
+                    <strong>{comprobante.tipoInversion}</strong>
+                  </div>
+                  <div className="grid-item">
+                    <span>Fecha y hora</span>
+                    <strong>{comprobante.fecha}</strong>
+                  </div>
+                </div>
+                <div className="side-note">
+                  <p>Enviamos una copia digital al correo asociado a tu cuenta para que la consultes cuando quieras.</p>
+                  <span>También puedes revisar tus movimientos en la sección Inversiones.</span>
+                </div>
               </div>
-            </div>
-
-            <div className="comprobante-actions">
-              <button onClick={() => generarPDF(comprobante)} className="btn-download">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Descargar PDF
-              </button>
-              <button onClick={() => setComprobante(null)} className="btn-new-investment">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Nueva Inversión
-              </button>
-              <button onClick={() => navigate("/projects")} className="btn-projects">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                </svg>
-                Ver Proyectos
-              </button>
             </div>
           </div>
         </div>
