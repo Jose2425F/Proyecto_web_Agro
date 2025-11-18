@@ -23,12 +23,30 @@ const MisProyectos = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [proyectoAEliminar, setProyectoAEliminar] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [isCompactLayout, setIsCompactLayout] = useState(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia("(max-width: 820px)").matches
+  })
+  const [descripcionExpandida, setDescripcionExpandida] = useState({})
 
   useEffect(() => {
     if (userId) {
       fetchData()
     }
   }, [userId])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+    const mediaQuery = window.matchMedia("(max-width: 820px)")
+    const handler = (event) => setIsCompactLayout(event.matches)
+    handler(mediaQuery)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handler)
+      return () => mediaQuery.removeEventListener("change", handler)
+    }
+    mediaQuery.addListener(handler)
+    return () => mediaQuery.removeListener(handler)
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -146,6 +164,21 @@ const MisProyectos = () => {
       Cancelado: "cancelado",
     }
     return estadoMap[estado] || "buscando"
+  }
+
+  const calcularProgreso = (proyecto) => {
+    const meta = Number(proyecto.costos) || 0
+    if (meta <= 0) return 0
+    return (Number(proyecto.monto_recaudado) / meta) * 100
+  }
+
+  const descripcionEsLarga = (texto = "") => texto.trim().length > 160
+
+  const toggleDescripcion = (idProyecto) => {
+    setDescripcionExpandida((prev) => ({
+      ...prev,
+      [idProyecto]: !prev[idProyecto],
+    }))
   }
 
   if (loading) {
@@ -323,7 +356,7 @@ const MisProyectos = () => {
             {proyectos.length > 0 ? (
               <div className="projects-grid">
                 {proyectos.slice(0, 3).map((proyecto) => {
-                  const progreso = (Number(proyecto.monto_recaudado) / Number(proyecto.costos)) * 100
+                  const progreso = calcularProgreso(proyecto)
                   const inversionesProyecto = getInversionesPorProyecto(proyecto.id)
 
                   return (
@@ -337,7 +370,23 @@ const MisProyectos = () => {
                       </div>
                       <div className="project-card-content">
                         <h3>{proyecto.nombre}</h3>
-                        <p className="project-description">{proyecto.descripcion}</p>
+                        {proyecto.descripcion && (
+                          <div className="project-description-wrapper">
+                            <p
+                              className={`project-description ${descripcionExpandida[proyecto.id] ? "expanded" : ""}`}
+                            >
+                              {proyecto.descripcion}
+                            </p>
+                            {descripcionEsLarga(proyecto.descripcion) && (
+                              <button
+                                className="btn-description-toggle"
+                                onClick={() => toggleDescripcion(proyecto.id)}
+                              >
+                                {descripcionExpandida[proyecto.id] ? "Ver menos" : "Ver más"}
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                         <div className="project-stats-row">
                           <div className="project-stat">
@@ -469,117 +518,237 @@ const MisProyectos = () => {
             </div>
 
             {proyectosFiltrados.length > 0 ? (
-              <div className="proyectos-table">
-                <div className="table-header">
-                  <span>Proyecto</span>
-                  <span>Estado</span>
-                  <span>Recaudado</span>
-                  <span>Meta</span>
-                  <span>Progreso</span>
-                  <span>Inversiones</span>
-                  <span>Acciones</span>
-                </div>
-                {proyectosFiltrados.map((proyecto) => {
-                  const progreso = (Number(proyecto.monto_recaudado) / Number(proyecto.costos)) * 100
-                  const inversionesProyecto = getInversionesPorProyecto(proyecto.id)
+              isCompactLayout ? (
+                <div className="mobile-projects-wrapper">
+                  {proyectosFiltrados.map((proyecto) => {
+                    const progreso = calcularProgreso(proyecto)
+                    const inversionesProyecto = getInversionesPorProyecto(proyecto.id)
 
-                  return (
-                    <div key={proyecto.id} className="table-row">
-                      <div className="table-cell project-cell">
-                        <img
-                          src={proyecto.imagen_url || "/placeholder.svg?height=60&width=80"}
-                          alt={proyecto.nombre}
-                          className="table-project-image"
-                        />
-                        <div>
-                          <span className="project-name">{proyecto.nombre}</span>
-                          <span className="project-id">ID: {proyecto.id}</span>
-                        </div>
-                      </div>
-                      <div className="table-cell">
-                        <span className={`estado-badge ${getEstadoBadgeClass(proyecto.estado)}`}>
-                          {proyecto.estado}
-                        </span>
-                      </div>
-                      <div className="table-cell">
-                        <span className="monto-value">${Number(proyecto.monto_recaudado).toLocaleString("es-CO")}</span>
-                      </div>
-                      <div className="table-cell">
-                        <span className="monto-value">${Number(proyecto.costos).toLocaleString("es-CO")}</span>
-                      </div>
-                      <div className="table-cell">
-                        <div className="progress-cell">
-                          <div className="mini-progress-bar">
-                            <div className="mini-progress-fill" style={{ width: `${Math.min(progreso, 100)}%` }}></div>
+                    return (
+                      <article key={proyecto.id} className="mobile-project-card">
+                        <header className="mobile-card-header">
+                          <div className="mobile-card-thumb">
+                            <img
+                              src={proyecto.imagen_url || "/placeholder.svg?height=60&width=80"}
+                              alt={proyecto.nombre}
+                            />
                           </div>
-                          <span className="progress-text">{progreso.toFixed(0)}%</span>
+                          <div className="mobile-card-title">
+                            <p className="mobile-card-id">ID: {proyecto.id}</p>
+                            <h3>{proyecto.nombre}</h3>
+                            <span className={`estado-badge compact ${getEstadoBadgeClass(proyecto.estado)}`}>
+                              {proyecto.estado}
+                            </span>
+                          </div>
+                        </header>
+
+                        {proyecto.descripcion && (
+                          <div className="mobile-description-wrapper">
+                            <p
+                              className={`mobile-card-description ${
+                                descripcionExpandida[proyecto.id] ? "expanded" : ""
+                              }`}
+                            >
+                              {proyecto.descripcion}
+                            </p>
+                            {descripcionEsLarga(proyecto.descripcion) && (
+                              <button
+                                className="btn-description-toggle"
+                                onClick={() => toggleDescripcion(proyecto.id)}
+                              >
+                                {descripcionExpandida[proyecto.id] ? "Ver menos" : "Ver más"}
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mobile-card-metrics">
+                          <div className="mobile-card-metric">
+                            <span>Recaudado</span>
+                            <strong>${Number(proyecto.monto_recaudado).toLocaleString("es-CO")}</strong>
+                          </div>
+                          <div className="mobile-card-metric">
+                            <span>Meta</span>
+                            <strong>${Number(proyecto.costos).toLocaleString("es-CO")}</strong>
+                          </div>
+                          <div className="mobile-card-metric">
+                            <span>Inversiones</span>
+                            <strong>{inversionesProyecto.length}</strong>
+                          </div>
+                        </div>
+
+                        <div className="mobile-card-progress">
+                          <div className="mobile-progress-label">
+                            <span>Progreso</span>
+                            <span>{Math.min(progreso, 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="project-progress-bar">
+                            <div className="project-progress-fill" style={{ width: `${Math.min(progreso, 100)}%` }}></div>
+                          </div>
+                        </div>
+
+                        <div className="mobile-card-actions">
+                          <button
+                            className="btn-mobile-action"
+                            onClick={() => {
+                              setProyectoSeleccionado(proyecto)
+                              setVistaActual("inversiones")
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            Ver inversiones
+                          </button>
+                          <div className="mobile-card-secondary-actions">
+                            <button className="btn-icon" onClick={() => handleEditarProyecto(proyecto)}>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
+                            <button className="btn-icon danger" onClick={() => abrirModalEliminar(proyecto)}>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="proyectos-table">
+                  <div className="table-header">
+                    <span>Proyecto</span>
+                    <span>Estado</span>
+                    <span>Recaudado</span>
+                    <span>Meta</span>
+                    <span>Progreso</span>
+                    <span>Inversiones</span>
+                    <span>Acciones</span>
+                  </div>
+                  {proyectosFiltrados.map((proyecto) => {
+                    const progreso = calcularProgreso(proyecto)
+                    const inversionesProyecto = getInversionesPorProyecto(proyecto.id)
+
+                    return (
+                      <div key={proyecto.id} className="table-row">
+                        <div className="table-cell project-cell" data-label="Proyecto">
+                          <img
+                            src={proyecto.imagen_url || "/placeholder.svg?height=60&width=80"}
+                            alt={proyecto.nombre}
+                            className="table-project-image"
+                          />
+                          <div>
+                            <span className="project-name">{proyecto.nombre}</span>
+                            <span className="project-id">ID: {proyecto.id}</span>
+                          </div>
+                        </div>
+                        <div className="table-cell" data-label="Estado">
+                          <span className={`estado-badge ${getEstadoBadgeClass(proyecto.estado)}`}>
+                            {proyecto.estado}
+                          </span>
+                        </div>
+                        <div className="table-cell" data-label="Recaudado">
+                          <span className="monto-value">${Number(proyecto.monto_recaudado).toLocaleString("es-CO")}</span>
+                        </div>
+                        <div className="table-cell" data-label="Meta">
+                          <span className="monto-value">${Number(proyecto.costos).toLocaleString("es-CO")}</span>
+                        </div>
+                        <div className="table-cell" data-label="Progreso">
+                          <div className="progress-cell">
+                            <div className="mini-progress-bar">
+                              <div className="mini-progress-fill" style={{ width: `${Math.min(progreso, 100)}%` }}></div>
+                            </div>
+                            <span className="progress-text">{progreso.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                        <div className="table-cell" data-label="Inversiones">
+                          <span className="inversiones-count-small">{inversionesProyecto.length}</span>
+                        </div>
+                        <div className="table-cell table-actions" data-label="Acciones">
+                          <button
+                            className="btn-table-action"
+                            onClick={() => {
+                              setProyectoSeleccionado(proyecto)
+                              setVistaActual("inversiones")
+                            }}
+                            title="Ver detalles"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          </button>
+                          <button
+                            className="btn-table-action edit"
+                            onClick={() => handleEditarProyecto(proyecto)}
+                            title="Editar proyecto"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button
+                            className="btn-table-action delete"
+                            onClick={() => abrirModalEliminar(proyecto)}
+                            title="Eliminar proyecto"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
-                      <div className="table-cell">
-                        <span className="inversiones-count-small">{inversionesProyecto.length}</span>
-                      </div>
-                      <div className="table-cell table-actions">
-                        <button
-                          className="btn-table-action"
-                          onClick={() => {
-                            setProyectoSeleccionado(proyecto)
-                            setVistaActual("inversiones")
-                          }}
-                          title="Ver detalles"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        </button>
-                        <button
-                          className="btn-table-action edit"
-                          onClick={() => handleEditarProyecto(proyecto)}
-                          title="Editar proyecto"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                        <button
-                          className="btn-table-action delete"
-                          onClick={() => abrirModalEliminar(proyecto)}
-                          title="Eliminar proyecto"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              )
             ) : (
               <div className="empty-state">
                 <div className="empty-icon">🔍</div>
@@ -634,7 +803,7 @@ const MisProyectos = () => {
 
                     return (
                       <div key={inversion.id} className="table-row">
-                        <div className="table-cell investor-cell">
+                        <div className="table-cell investor-cell" data-label="Inversionista">
                           <div className="investor-avatar">
                             {inversion.usuarios?.foto_perfil ? (
                               <img
@@ -655,25 +824,25 @@ const MisProyectos = () => {
                             <span className="investor-id">ID: {inversion.id_inversor.slice(0, 8)}...</span>
                           </div>
                         </div>
-                        <div className="table-cell">
+                        <div className="table-cell" data-label="Proyecto">
                           <span className="project-name-small">{proyecto?.nombre}</span>
                         </div>
-                        <div className="table-cell">
+                        <div className="table-cell" data-label="Tipo">
                           <span className={`type-badge ${inversion.tipo_inversion?.toLowerCase()}`}>
                             {inversion.tipo_inversion === "Capital" ? "Dueño Único" : "Accionista"}
                           </span>
                         </div>
-                        <div className="table-cell">
+                        <div className="table-cell" data-label="Monto">
                           <span className="monto-value">
                             ${Number(inversion.monto_invertido).toLocaleString("es-CO")}
                           </span>
                         </div>
-                        <div className="table-cell">
+                        <div className="table-cell" data-label="Fecha">
                           <span className="fecha-value">
                             {new Date(inversion.fecha_inversion).toLocaleDateString("es-CO")}
                           </span>
                         </div>
-                        <div className="table-cell">
+                        <div className="table-cell" data-label="Contacto">
                           <button className="btn-table-action success">
                             <svg
                               width="16"

@@ -7,7 +7,7 @@
   --secondary-color: #adb5bd; /* Gris claro para texto secundario */
   --bg-dark: #242424; /* Fondo del componente más claro que el fondo de la web (#1A1A1A) */
   --bg-light: #343a40; /* Fondo de inputs/elementos */
-  --border-color: #495057; /* Borde más oscuro */
+  /* --border-color: #495057; Borde más oscuro */
   --text-light: #f8f9fa; /* Texto principal blanco */
   --success-color: #66bb6a; /* Verde para éxito (usaremos un tono más estándar) */
   --error-color: #ff5252; /* Rojo para error */
