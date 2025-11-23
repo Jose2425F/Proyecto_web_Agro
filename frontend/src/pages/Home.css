@@ -222,7 +222,6 @@
 }
 
 .home-page .header-badge {
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background: rgba(20, 201, 0, 0.1);
