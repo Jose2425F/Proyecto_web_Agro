@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import { supabase } from "../supabaseClient";
@@ -14,13 +14,15 @@ const Navbar = () => {
   const [profilePic, setProfilePic] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     }
-  }, []);
+  }, [setUserId]);
 
   useEffect(() => {
     if (!userId) return; 
@@ -49,12 +51,31 @@ const Navbar = () => {
     fetchUser();
   }, [userId]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+    setDropdownOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (event) => {
+      if (!dropdownRef.current) return;
+      if (!dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
   const handleLogout = () => {
     const doLogout = async () => {
       try {
         await supabase.auth.signOut();
       } catch (err) {
-        console.error('Error al cerrar sesión en Supabase:', err.message || err);
+        console.error("Error al cerrar sesión en Supabase:", err.message || err);
       }
 
       setUserId(null);
@@ -64,13 +85,9 @@ const Navbar = () => {
       setUserRole(null);
       setUserName("");
       setProfilePic("");
+      setDropdownOpen(false);
+      setMenuOpen(false);
       navigate("/");
-     // Asegurarse de que se elimine cualquier sesión obsoleta en el cliente
-      try {
-        window.location.reload();
-      } catch (e) {
-        console.error("Error al recargar la página:", e);
-      }
     };
 
     doLogout();
@@ -84,12 +101,19 @@ const Navbar = () => {
           AgroColombia
         </Link>
       </div>
-      <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-      <ul className={`navbar-links ${menuOpen ? "active" : ""}`}>
+      <button
+        className={`menu-icon ${menuOpen ? "is-active" : ""}`}
+        onClick={() => setMenuOpen((prev) => !prev)}
+        aria-expanded={menuOpen}
+        aria-controls="navbar-links"
+        aria-label="Alternar menú de navegación"
+        type="button"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul id="navbar-links" className={`navbar-links ${menuOpen ? "active" : ""}`}>
         <li>
           <Link to="/home" onClick={() => setMenuOpen(false)}>
             Inicio
@@ -139,10 +163,13 @@ const Navbar = () => {
         ) : (
           <>
             {/* Menú de perfil para escritorio */}
-            <li className="profile-menu desktop-profile-menu">
+            <li className="profile-menu desktop-profile-menu" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="profile-menu-trigger"
+                aria-haspopup="true"
+                aria-expanded={dropdownOpen}
+                aria-controls="profile-dropdown"
               >
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Avatar
@@ -153,7 +180,7 @@ const Navbar = () => {
                 </Stack>
               </button>
               {dropdownOpen && (
-                <ul className="profile-dropdown">
+                <ul id="profile-dropdown" className="profile-dropdown">
                   <li>
                     <button
                       onClick={() => {

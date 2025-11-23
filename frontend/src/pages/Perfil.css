@@ -275,6 +275,7 @@
   padding: clamp(1.5rem, 3vw, 2rem);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   border: 1px solid #2f2f2f;
+  overflow-wrap: anywhere;
 }
 
 .card-header {
@@ -476,7 +477,7 @@
 }
 
 .stat-detailed-card h3 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #14c900;
   margin: 0 0 0.5rem 0;
@@ -576,7 +577,7 @@
 }
 
 .inversion-content h3 {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #f0f0f0;
   margin: 0 0 1rem 0;
@@ -1126,6 +1127,7 @@
     font-size: 1.15rem;
   }
 
+    overflow-wrap: anywhere;
   .stat-quick-card .stat-label {
     font-size: 0.78rem;
   }
