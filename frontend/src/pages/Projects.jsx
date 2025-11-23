@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useUser } from "../hooks/useUser.js";
 import "./Projects.css";
 
 const Projects = () => {
   const navigate = useNavigate();
+  const { userId } = useUser();
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState("todos");
   const [sortBy, setSortBy] = useState("recientes");
+  const [likeLoading, setLikeLoading] = useState({});
   const [stats, setStats] = useState({
     total: 0,
     activos: 0,
@@ -43,6 +46,7 @@ const Projects = () => {
 
       const projectsWithLikes = (data || []).map((p) => ({
         ...p,
+        likes_proyecto: Array.isArray(p.likes_proyecto) ? p.likes_proyecto : [],
         likes_count: p.likes_proyecto ? p.likes_proyecto.length : 0,
       }));
 
@@ -145,6 +149,61 @@ const Projects = () => {
     }
 
     setFilteredProjects(filtered);
+  };
+
+  const handleToggleLike = async (projectId, isCurrentlyLiked) => {
+    if (!userId) {
+      navigate("/login");
+      return;
+    }
+
+    setLikeLoading((prev) => ({ ...prev, [projectId]: true }));
+
+    try {
+      if (isCurrentlyLiked) {
+        const { error } = await supabase
+          .from("likes_proyecto")
+          .delete()
+          .eq("id_proyecto", projectId)
+          .eq("id_usuario", userId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("likes_proyecto")
+          .insert([{ id_proyecto: projectId, id_usuario: userId }]);
+        if (error) throw error;
+      }
+
+      setProjects((prev) =>
+        prev.map((project) => {
+          if (project.id !== projectId) return project;
+          const updatedLikesCount = Math.max(
+            0,
+            (project.likes_count || 0) + (isCurrentlyLiked ? -1 : 1)
+          );
+
+          const updatedLikesList = isCurrentlyLiked
+            ? (project.likes_proyecto || []).filter(
+                (like) => like.id_usuario !== userId
+              )
+            : [...(project.likes_proyecto || []), { id_usuario: userId }];
+
+          return {
+            ...project,
+            likes_count: updatedLikesCount,
+            likes_proyecto: updatedLikesList,
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error al cambiar el estado del like:", error.message || error);
+    } finally {
+      setLikeLoading((prev) => {
+        const updated = { ...prev };
+        delete updated[projectId];
+        return updated;
+      });
+    }
   };
 
   if (loading) {
@@ -304,6 +363,9 @@ const Projects = () => {
             const creador = `${proyecto.usuarios?.nombre || "Usuario"} ${
               proyecto.usuarios?.apellido || ""
             }`.trim();
+            const likeEntries = proyecto.likes_proyecto || [];
+            const isLiked = likeEntries.some((like) => like.id_usuario === userId);
+            const displayLikes = proyecto.likes_count || 0;
 
             return (
               <article key={proyecto.id} className="projects-page-card">
@@ -394,11 +456,25 @@ const Projects = () => {
                         )}
                       </time>
                     </div>
-                    <div className="projects-page-card-stat">
+                    <button
+                      type="button"
+                      className={`projects-page-card-stat projects-page-like-btn ${
+                        isLiked ? "liked" : ""
+                      }`}
+                      onClick={() => handleToggleLike(proyecto.id, isLiked)}
+                      aria-pressed={isLiked}
+                      aria-label={
+                        isLiked
+                          ? "Quitar me gusta al proyecto"
+                          : "Marcar me gusta al proyecto"
+                      }
+                      disabled={likeLoading[proyecto.id]}
+                    >
                       <svg
                         viewBox="0 0 24 24"
-                        fill="none"
+                        fill={isLiked ? "currentColor" : "none"}
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -407,8 +483,8 @@ const Projects = () => {
                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                         />
                       </svg>
-                      <span>{proyecto.likes_count || 0}</span>
-                    </div>
+                      <span>{displayLikes}</span>
+                    </button>
                   </div>
 
                   <div className="projects-page-card-actions">
