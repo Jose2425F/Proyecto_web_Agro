@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/vite.svg" id="app-favicon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proyecto Agro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -10,5 +10,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="module">
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "") ?? ""
+      const LOGO_PATH = "/storage/v1/object/public/avatars/logo/Logo.png"
+      const LOGO_URL = SUPABASE_URL ? `${SUPABASE_URL}${LOGO_PATH}` : LOGO_PATH
+      const favicon = document.getElementById("app-favicon")
+      if (favicon) favicon.href = LOGO_URL
+    </script>
   </body>
 </html>

@@ -57,15 +57,6 @@ const Inversiones = () => {
         .order("fecha_inversion", { ascending: false })
 
       if (inversionesError) throw inversionesError
-
-      inversionesData?.forEach((inv) => {
-        console.log(" Inversión:", {
-          id: inv.id,
-          tipo_inversion: inv.tipo_inversion,
-          estado: inv.proyectos?.estado,
-        })
-      })
-
       setInversiones(inversionesData || [])
 
       // Calcular estadísticas

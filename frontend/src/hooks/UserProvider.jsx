@@ -34,7 +34,7 @@ export const UserProvider = ({ children }) => {
             localStorage.setItem("role", userProfile.rol);
           }
         } else {
-          console.log("🚫 No hay sesión activa en Supabase");
+          // console.log("🚫 No hay sesión activa en Supabase");
         }
       }
 
