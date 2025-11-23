@@ -616,26 +616,14 @@ const InvertirProyecto = () => {
         day: "numeric",
       })
     : "En curso"
-  const produccionEstimada = project.produccion_estimada
-    ? `${Number(project.produccion_estimada).toLocaleString("es-CO")} unidades`
-    : "Por definir"
   const ticketAccionista = costoTotal * 0.1
   const ticketDuenoUnico = costoTotal * 0.3
   const progressTier = progressPercent >= 75 ? "alto" : progressPercent >= 40 ? "medio" : "bajo"
-  const descripcionCorta = project.descripcion?.trim()
-    ? project.descripcion
-    : "Este proyecto impulsa la productividad agrícola con prácticas sostenibles y alianzas con comunidades locales."
 
   const fundingSummary = [
     { label: "Meta total", value: `$${costoTotal.toLocaleString("es-CO")}` },
     { label: "Recaudado", value: `$${montoRecaudado.toLocaleString("es-CO")}` },
     { label: "Disponible", value: `$${remainingCapital.toLocaleString("es-CO")}` },
-  ]
-
-  const projectHighlights = [
-    { label: "Producción estimada", value: produccionEstimada },
-    { label: "Estado", value: project.estado || "Por definir" },
-    { label: "Creado", value: fechaCreacion },
   ]
 
   const timelineMilestones = [
@@ -763,25 +751,6 @@ const InvertirProyecto = () => {
                 </div>
               </section>
 
-              <div className="project-summary-card">
-                <div className="summary-header">
-                  <div>
-                    <p>Visión general</p>
-                    <h3>¿Por qué invertir?</h3>
-                  </div>
-                  <span className="summary-chip">Agricultura sostenible</span>
-                </div>
-                <p className="summary-body">{descripcionCorta}</p>
-                <div className="summary-meta">
-                  {projectHighlights.map((item) => (
-                    <div className="summary-item" key={item.label}>
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="benefits-card">
                 <h3>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -876,6 +845,19 @@ const InvertirProyecto = () => {
                     <div className="form-icon">💎</div>
                     <h2>Realizar Inversión</h2>
                     <p>Selecciona tu tipo de inversión y monto</p>
+                  </div>
+                  <div className="invest-sim-cta-block">
+                    <div>
+                      <p>¿Tienes dudas sobre el retorno?</p>
+                      <strong>Simula distintos montos sin riesgo</strong>
+                    </div>
+                    <button
+                      type="button"
+                      className="invest-sim-cta-btn"
+                      onClick={() => navigate(`/simulador?projectId=${id}`)}
+                    >
+                      Abrir simulador
+                    </button>
                   </div>
                   {ownerLockActive && (
                     <div className="owner-lock-banner warning" role="status">
@@ -1033,7 +1015,6 @@ const InvertirProyecto = () => {
                             onChange={handleChange}
                             disabled={formDisabled}
                           />
-                          <span className="checkbox-custom"></span>
                           <div className="terms-copy">
                             <strong>Acepto los términos y condiciones</strong>
                             <p>Confirmo que leí el acuerdo del proyecto y asumo los riesgos.</p>

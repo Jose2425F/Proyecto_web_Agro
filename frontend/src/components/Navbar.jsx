@@ -101,11 +101,18 @@ const Navbar = () => {
           </Link>
         </li>
         {isLoggedIn && userRole === "inversionista" && (
-          <li>
-            <Link to="/inversiones" onClick={() => setMenuOpen(false)}>
-              Mis Inversiones
-            </Link>
-          </li>
+          <>
+            <li>
+              <Link to="/inversiones" onClick={() => setMenuOpen(false)}>
+                Mis Inversiones
+              </Link>
+            </li>
+            <li>
+              <Link to="/simulador" onClick={() => setMenuOpen(false)}>
+                Simulador
+              </Link>
+            </li>
+          </>
         )}
         {isLoggedIn && userRole === "campesino" && (
           <li>

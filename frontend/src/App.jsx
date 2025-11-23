@@ -14,6 +14,7 @@ import GestionarProyecto from './components/GestionarProyecto';
 import Inversiones from './pages/Inversiones';
 import EditarProyecto from './components/EditarProyecto';
 import ProtectedRoute from './components/ProtectedRoute';
+import Simulador from './pages/Simulador';
 
 import './App.css';
 function App() {
@@ -38,6 +39,7 @@ function App() {
             <Route path="/gestionar/:id" element={<GestionarProyecto />} />
             <Route path="/invertir/:id" element={<InvertirProyecto />} />
             <Route path="/inversiones" element={<Inversiones />} />
+            <Route path="/simulador" element={<Simulador />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["administrador","administradorsupremo"]} />}>
             <Route path="/admin-panel" element={<AdminPanel />} />
