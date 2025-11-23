@@ -5,6 +5,10 @@ import Stack from "@mui/material/Stack";
 import { supabase } from "../supabaseClient";
 import { useUser } from "../hooks/useUser.js";
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "") ?? "";
+const LOGO_PATH = "/storage/v1/object/public/avatars/logo/Logo.png";
+const LOGO_URL = SUPABASE_URL ? `${SUPABASE_URL}${LOGO_PATH}` : LOGO_PATH;
+
 const Navbar = () => {
   const { userId, setUserId } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,7 +101,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-logo">
         <Link to="/home" onClick={() => setMenuOpen(false)}>
-          <img src="https://eavbcqqsayutikbzhejp.supabase.co/storage/v1/object/public/avatars/logo/Logo.png" alt="Logo" className="logo" />
+          <img src={LOGO_URL} alt="Logo" className="logo" />
           AgroColombia
         </Link>
       </div>

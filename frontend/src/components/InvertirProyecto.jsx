@@ -6,6 +6,10 @@ import { useUser } from "../hooks/useUser"
 import jsPDF from "jspdf"
 import AlertModal from "./AlertModal"
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "") ?? ""
+const LOGO_PATH = "/storage/v1/object/public/avatars/logo/Logo.png"
+const LOGO_URL = SUPABASE_URL ? `${SUPABASE_URL}${LOGO_PATH}` : LOGO_PATH
+
 const generateClientUUID = () => {
   if (typeof crypto !== "undefined") {
     if (crypto.randomUUID) return crypto.randomUUID()
@@ -83,8 +87,7 @@ const InvertirProyecto = () => {
     doc.rect(0, 0, pageWidth, 2, "F")
 
     // Logo
-    const logoURL = "https://eavbcqqsayutikbzhejp.supabase.co/storage/v1/object/public/avatars/logo/Logo.png"
-    doc.addImage(logoURL, "PNG", 20, 15, 25, 25)
+    doc.addImage(LOGO_URL, "PNG", 20, 15, 25, 25)
     
     // Empresa
     doc.setFont("helvetica", "bold")
