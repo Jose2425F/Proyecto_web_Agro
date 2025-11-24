@@ -13,6 +13,7 @@ const DetalleProyecto = () => {
   const [loading, setLoading] = useState(true)
   const [liked, setLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(0)
+  const [likeLoading, setLikeLoading] = useState(false)
 
 useEffect(() => {
   if (!id) return;
@@ -92,11 +93,26 @@ useEffect(() => {
   };
 }, [id, userId, supabase]);
 
+const refreshLikesCount = async () => {
+  const { count, error } = await supabase
+    .from("likes_proyecto")
+    .select("*", { count: "exact", head: true })
+    .eq("id_proyecto", id)
+
+  if (!error) {
+    setLikesCount(count || 0)
+  }
+}
+
 const handleLike = async () => {
   if (!userId) {
-    navigate("/login");
-    return;
+    navigate("/login")
+    return
   }
+
+  if (likeLoading) return
+
+  setLikeLoading(true)
 
   try {
     if (liked) {
@@ -104,26 +120,35 @@ const handleLike = async () => {
         .from("likes_proyecto")
         .delete()
         .eq("id_proyecto", id)
-        .eq("id_usuario", userId);
-      if (error) throw error;
+        .eq("id_usuario", userId)
 
-      setLikesCount((prev) => prev - 1);
-      setLikesCount(likesCount - 1)
+      if (error) throw error
+
+      setLikesCount((prev) => Math.max(0, prev - 1))
+      setLiked(false)
     } else {
       const { error } = await supabase
         .from("likes_proyecto")
-        .insert([{ id_proyecto: id, id_usuario: userId }]);
-      if (error) throw error;
+        .insert([{ id_proyecto: id, id_usuario: userId }])
 
-      setLikesCount((prev) => prev + 1);
-      setLikesCount(likesCount + 1)
+      if (error && error.code !== "23505") {
+        throw error
+      }
+
+      if (!error) {
+        setLikesCount((prev) => prev + 1)
+      }
+
+      setLiked(true)
     }
 
-    setLiked(!liked);
+    await refreshLikesCount()
   } catch (error) {
-    console.error("Error al dar like:", error);
+    console.error("Error al dar like:", error)
+  } finally {
+    setLikeLoading(false)
   }
-};
+}
 
 const formatMonto = (monto) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(monto);
@@ -192,7 +217,12 @@ const numeroInversores = new Set(inversiones.map((inv) => inv.id_inversor)).size
               </svg>
               <span>{numeroInversores} inversores</span>
             </div>
-            <button className={`btn-like-detalle ${liked ? "liked" : ""}`} onClick={handleLike}>
+            <button
+              className={`btn-like-detalle ${liked ? "liked" : ""}`}
+              onClick={handleLike}
+              disabled={likeLoading}
+              aria-pressed={liked}
+            >
               <svg viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor">
                 <path
                   strokeLinecap="round"

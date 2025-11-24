@@ -157,6 +157,8 @@ const Projects = () => {
       return;
     }
 
+    if (likeLoading[projectId]) return;
+
     setLikeLoading((prev) => ({ ...prev, [projectId]: true }));
 
     try {
