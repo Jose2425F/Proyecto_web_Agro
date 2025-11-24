@@ -289,7 +289,7 @@
   font-size: 1.3rem;
   color: #cccccc;
   max-width: 700px;
-  margin: 0 auto 3rem;
+  /* margin: 0 auto 3rem; */
   line-height: 1.6;
   animation: fadeInUp 1.2s ease-out 0.4s backwards;
 }
